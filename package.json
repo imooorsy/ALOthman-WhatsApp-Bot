@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "pnpm --parallel --filter './apps/*' dev",
+    "dev": "pnpm --parallel --filter @osman/api --filter @osman/web dev",
     "build": "pnpm --filter @osman/shared build && pnpm --filter @osman/api build && pnpm --filter @osman/web build",
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter @osman/api prisma generate",
