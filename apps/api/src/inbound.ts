@@ -7,11 +7,12 @@ import {SettingsService} from './settings';
 import {AgentService} from './agent';
 import {WhatsAppProvider} from './whatsapp';
 import {lockConversation} from './chats';
+import {QueueService} from './queue';
 export const inboundSchema=z.object({id:z.string().min(1).max(200),phone:phoneSchema,text:z.string().max(10000),type:z.enum(['text','image','audio','document','other']).default('text'),at:z.string().datetime().optional()});
 export type Inbound=z.infer<typeof inboundSchema>;
 @Injectable()
 export class InboundService {
- constructor(private db:Db,private settings:SettingsService,private agent:AgentService,private wa:WhatsAppProvider){}
+ constructor(private db:Db,private settings:SettingsService,private agent:AgentService,private wa:WhatsAppProvider,private queue:QueueService){}
  async receive(input:Inbound){
   const config=await this.settings.get();
   const result=await this.db.$transaction(async tx=>{
@@ -30,15 +31,17 @@ export class InboundService {
    await tx.conversation.update({where:{id:chat.id},data:{status:policy.status,unreadCount:{increment:1},version:{increment:1},lastActivityAt:new Date(),lastClientMessageAt:at>chat.lastClientMessageAt?at:chat.lastClientMessageAt}});
    if(policy.status!==chat.status)await tx.conversationEvent.create({data:{conversationId:chat.id,type:'inbound.handoff',payload:{reason:policy.reason,previousStatus:chat.status,status:policy.status}}});
    if(policy.notify)await tx.notification.create({data:{conversationId:chat.id,type:policy.status==='urgent'?'urgent':'message',reason:policy.reason}});
+   if(policy.callAgent)await this.queue.enqueue(chat.id,tx);
    return {id:chat.id,duplicate:false};
   });
   return result;
  }
  async process(id:string){
-  const config=await this.settings.get();
   await this.db.$transaction(async tx=>{
    await lockConversation(tx,id);const c=await tx.conversation.findUniqueOrThrow({where:{id},include:{client:true,messages:{orderBy:{createdAt:'asc'}}}});
    const pending=c.messages.filter(m=>m.direction==='client'&&!m.processedAt);if(!pending.length)return;
+   const config=await this.settings.get();
+   if(Date.now()-c.lastActivityAt.getTime()<Number(process.env.DEBOUNCE_MS||3000)){await this.queue.enqueue(id,tx);return;}
    if(c.status!=='agent_active'||config.rules.paused){await tx.message.updateMany({where:{id:{in:pending.map(m=>m.id)}},data:{processedAt:new Date()}});return;}
    try{
     const response=await this.agent.respond({conversationId:id,clientPhone:c.client.phone,history:c.messages.filter(m=>!pending.some(p=>p.id===m.id)).map(m=>({role:m.direction==='agent'?'assistant':m.direction,text:m.type==='text'?m.text:'[attachment]',at:m.createdAt.toISOString()})),newMessages:pending.map(m=>m.type==='text'?m.text:'[attachment]'),config});
@@ -58,5 +61,5 @@ export class InboundService {
 @Controller('dev') @UseGuards(AuthGuard) @Admin()
 export class DevController {
  constructor(private inbound:InboundService){}
- @Post('inbound') async simulate(@Body() body:unknown){if(process.env.NODE_ENV==='production'||(process.env.WA_PROVIDER||'mock')!=='mock')throw new NotFoundException();const result=inboundSchema.safeParse(body);if(!result.success)throw new BadRequestException('بيانات الرسالة غير صالحة');const received=await this.inbound.receive(result.data);if(!received.duplicate)await this.inbound.process(received.id);return received;}
+ @Post('inbound') async simulate(@Body() body:unknown){if(process.env.NODE_ENV==='production'||(process.env.WA_PROVIDER||'mock')!=='mock')throw new NotFoundException();const result=inboundSchema.safeParse(body);if(!result.success)throw new BadRequestException('بيانات الرسالة غير صالحة');return this.inbound.receive(result.data);}
 }

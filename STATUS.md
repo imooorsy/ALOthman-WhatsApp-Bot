@@ -11,7 +11,7 @@
 ## Milestones
 - M1 complete: scaffold, checked-in PostgreSQL migration, idempotent seed, cookie auth and roles, settings API and Arabic settings page, staff management.
 - M2 complete: three-column chats and deep links, pure state machine, staff ownership and concurrency, secretary links, 24-hour window, mock inbound and agent.
-- M3 pending: webhook, durable worker, agent adapters.
+- M3 complete: signed Meta webhook, atomic pg-boss enqueue, advisory-locked debounce worker, delivery receipts, validated mock/inprocess/http agent modes, timeout/retry fallback, private agent config endpoint and contract command.
 - M4 pending: realtime and notifications.
 - M5 pending: tests, hardening, Render and documentation.
 
@@ -27,3 +27,9 @@
 - Strict workspace typecheck and API build passed.
 - scripts/smoke-m2.mjs passed the database-backed mock flow, staff takeover/send, stale action rejection, webhook-message ID deduplication, missing secretary validation and silent terminal messages; fixtures cleaned up.
 - Terminal conversations are retained for incoming follow-ups so the specified not_suitable silent-store policy can apply.
+
+## M3 validation
+- 34 Jest assertions and pnpm test:agent-contract passed; strict workspace typecheck and API build passed.
+- scripts/smoke-m3.mjs passed against live PostgreSQL: invalid signature rejected, three concurrent signed retries produced one inbound message and one mock-agent reply, durable queue executed, urgent status and config version recorded.
+- M2 smoke reran successfully with asynchronous queue processing.
+- ACK follows durable database/queue writes and does not wait for debounce or the agent.

@@ -10,7 +10,7 @@ const login=await call('/auth/login','POST',{email:env.SEED_ADMIN_EMAIL,password
 const phone='+1555'+String(Date.now()).slice(-7);let id;
 try{
  const inbound=await call('/dev/inbound','POST',{id:'test-'+Date.now(),phone,text:'عاجل'});assert.equal(inbound.status,201);id=(await inbound.json()).id;
- let c=await (await call('/chats/'+id)).json();assert.equal(c.status,'urgent');assert.equal(c.messages.filter(m=>m.direction==='agent').length,1);
+ let c;for(let attempt=0;attempt<30;attempt++){c=await (await call('/chats/'+id)).json();if(c.status==='urgent')break;await new Promise(r=>setTimeout(r,500));}assert.equal(c.status,'urgent');assert.equal(c.messages.filter(m=>m.direction==='agent').length,1);
  const take=await call('/chats/'+id+'/actions','POST',{action:'take',version:c.version});assert.equal(take.status,201);
  assert.equal((await call('/chats/'+id+'/actions','POST',{action:'resume',version:c.version})).status,409);
  c=await (await call('/chats/'+id)).json();assert.equal(c.status,'human');assert.equal((await call('/chats/'+id+'/messages','POST',{text:'رد الموظف',version:c.version})).status,201);
