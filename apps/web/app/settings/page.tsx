@@ -148,6 +148,25 @@ export default function Settings() {
                 </div>
               </fieldset>
               <fieldset className="pn" disabled={readonly || busy}>
+                <legend className="ph">إعدادات الوكيل</legend>
+                <div className="rl">
+                  <span>تشغيل نموذج عثمان</span>
+                  <Switch
+                    label="تشغيل نموذج عثمان"
+                    value={!config.rules.paused}
+                    disabled={readonly || busy}
+                    onChange={(enabled) => change("rules", "paused", !enabled)}
+                  />
+                </div>
+                <p className="hint">
+                  {config.rules.paused ? "النموذج متوقف." : "النموذج مفعّل."}{" "}
+                  تُطبّق التغييرات بعد حفظ الإعدادات. عند الإيقاف، تُحفظ رسائل
+                  العملاء وتُحوّل إلى الموظفين دون استدعاء النموذج. بعد إعادة
+                  التشغيل، يستأنف عثمان المحادثات المخصصة له عند وصول رسالة
+                  جديدة من العميل.
+                </p>
+              </fieldset>
+              <fieldset className="pn" disabled={readonly || busy}>
                 <legend className="ph">
                   الخدمات والأسعار{" "}
                   <small>ريال، غير شاملة ضريبة القيمة المضافة</small>
@@ -286,7 +305,6 @@ export default function Settings() {
                     ["urgentHandoff", "تحويل عاجل عند وجود مهلة قريبة"],
                     ["autoApology", "اعتذار تلقائي للطلبات خارج النطاق"],
                     ["sendSummary", "إرسال ملخص الفريق للموظف عند التحويل"],
-                    ["paused", "إيقاف البوت مؤقتًا"],
                   ] as const
                 ).map(([key, label]) => (
                   <div className="rl" key={key}>

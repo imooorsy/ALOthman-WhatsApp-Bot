@@ -60,3 +60,9 @@
 - Rechecked login (201), cookie-backed /auth/me (200), chats API (200, five sample conversations), /chats document (200), all seven page script assets (200), and credentialed CORS headers.
 - Added --no-bail to pnpm dev and documented independent service restart commands. The updated command's workspace selection/options were validated.
 - API and web are currently running independently for local testing. Browser UI automation remains unavailable, so no automated browser interaction is claimed.
+
+## Agent settings on/off control
+- Added an Arabic Agent Settings panel with an admin-only positive enable switch. Save Changes persists the existing rules.paused field; removed the duplicate pause switch from acceptance rules.
+- Queued messages hand off with an audit event and notification when the model is disabled before processing. A response from an already-running call is discarded if the switch was disabled before delivery.
+- Workspace typecheck and API build passed. All 42 Jest tests passed, including three new disabled-model regression cases and the database-backed pipeline tests.
+- Local HTTP integration verified off -> human/no reply and on -> mock reply; original settings restored and temporary conversations removed. The running settings page returns 200.

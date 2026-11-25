@@ -34,6 +34,8 @@ The endpoint is admin-only, available only outside production with WA_PROVIDER=m
 
 Inbound behavior in human/urgent/waiting_schedule stores the message and notifies staff; not_suitable stores silently. Pause routes new inbound messages to staff. Staff takeover is exclusive, mutations use optimistic versions, and return-to-agent resumes on the next client message. Since not_suitable must retain silent follow-ups, v1 reuses the latest conversation rather than silently starting a new agent session for the same phone.
 
+To enable or disable model replies, open Settings → **إعدادات الوكيل** → **تشغيل نموذج عثمان**, then save changes. Only admins can change this switch; employees can view it. It uses the existing global pause setting, so the sidebar status stays consistent. Disabled models are not called for queued messages, which hand off to staff with an audit event and notification. If a model call is already running, its result is checked against the current switch before sending a reply. Re-enabling does not take conversations away from staff; return a chat to عثمان to resume on its next client message.
+
 ## Tests
 
 `pnpm test` runs unit and adapter tests. The database suite is skipped unless TEST_DATABASE_URL points to a separate, migrated test database. Create a database such as `osman_test`, apply migrations to it by setting DATABASE_URL for `pnpm db:migrate`, then set TEST_DATABASE_URL and run `pnpm test:e2e`. The suite starts a test API on port 4101, sends concurrent signed webhook retries, exercises the actual PostgreSQL inbox and pg-boss workers, validates the mock reply and urgent socket event, and verifies agent failure fallback. Use only a dedicated test database; fixture cleanup runs automatically.

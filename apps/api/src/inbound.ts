@@ -164,18 +164,44 @@ export class InboundService {
         );
         if (!pending.length) return;
         const config = await this.settings.get();
+        const markProcessed = () =>
+          tx.message.updateMany({
+            where: { id: { in: pending.map((m) => m.id) } },
+            data: { processedAt: new Date() },
+          });
+        const handoffDisabledAgent = async () => {
+          const reason = "نموذج عثمان متوقف؛ يلزم متابعة الموظف";
+          await tx.conversation.update({
+            where: { id },
+            data: {
+              status: "human",
+              assignedStaffId: null,
+              version: { increment: 1 },
+            },
+          });
+          await tx.conversationEvent.create({
+            data: {
+              conversationId: id,
+              type: "agent.paused",
+              payload: { reason, previousStatus: c.status, status: "human" },
+            },
+          });
+          const notification = await tx.notification.create({
+            data: { conversationId: id, type: "handoff", reason },
+          });
+          await markProcessed();
+          return notification.id;
+        };
+        if (c.status !== "agent_active") {
+          await markProcessed();
+          return;
+        }
+        if (config.rules.paused) return handoffDisabledAgent();
         if (
           Date.now() - c.lastActivityAt.getTime() <
           Number(process.env.DEBOUNCE_MS || 3000)
         ) {
           await this.queue.enqueue(id, tx);
-          return;
-        }
-        if (c.status !== "agent_active" || config.rules.paused) {
-          await tx.message.updateMany({
-            where: { id: { in: pending.map((m) => m.id) } },
-            data: { processedAt: new Date() },
-          });
           return;
         }
         let notificationId: string | undefined;
@@ -195,6 +221,9 @@ export class InboundService {
             ),
             config,
           });
+          // Do not deliver a reply if an admin disabled the model while it ran.
+          if ((await this.settings.get()).rules.paused)
+            return handoffDisabledAgent();
           const status = ConversationMachine.agentAction(response.action);
           if (response.reply) {
             const sent = await this.wa.send(c.client.phone, response.reply);
