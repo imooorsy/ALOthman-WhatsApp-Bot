@@ -66,3 +66,8 @@
 - Queued messages hand off with an audit event and notification when the model is disabled before processing. A response from an already-running call is discarded if the switch was disabled before delivery.
 - Workspace typecheck and API build passed. All 42 Jest tests passed, including three new disabled-model regression cases and the database-backed pipeline tests.
 - Local HTTP integration verified off -> human/no reply and on -> mock reply; original settings restored and temporary conversations removed. The running settings page returns 200.
+
+## Firebase preparation
+- Added Firebase 13.4 and a browser-only, lazily loaded Cloud Messaging initializer. Public project configuration and the supplied public VAPID key are in ignored local web environment files; Analytics is not initialized.
+- Workspace and web TypeScript checks passed. Patched Firebase's transitive gRPC dependency; the production audit reports no known vulnerabilities.
+- Push enrollment and background delivery are not active yet. Waiting for the local path to the private service-account JSON before wiring the service worker, authenticated registrations and backend sender.
