@@ -24,3 +24,20 @@ export type AgentResponse = z.infer<typeof agentResponseSchema>;
 export interface AgentRequest {conversationId:string;clientPhone:string;history:{role:'client'|'assistant'|'staff';text:string;at:string}[];newMessages:string[];config:OfficeConfig}
 export interface AgentPort {respond(request:AgentRequest):Promise<AgentResponse>}
 export const events = {updated:'conversation.updated',inbound:'message.inbound',handoff:'handoff.created',settings:'settings.updated'} as const;
+export type ChatMessage={id:string;conversationId:string;direction:'client'|'agent'|'staff';type:'text'|'image'|'audio'|'document'|'other';text:string;deliveryStatus:string;createdAt:string;agentConfigVersion:number|null};
+export type Chat={id:string;clientId:string;client:{phone:string;name:string|null;detectedCategory:string|null;shortDescription:string|null};status:ConversationStatus;assignedStaffId:string|null;assignedStaff:{id:string;name:string}|null;category:string|null;summary:string|null;urgentReason:string|null;unreadCount:number;lastClientMessageAt:string;lastActivityAt:string;version:number;messages:ChatMessage[]};
+export type StaffAction='take'|'resume'|'secretary'|'close';
+export class ConversationMachine {
+ static agentAction(action:AgentResponse['action']):ConversationStatus{return {continue:'agent_active',handoff:'human',handoff_urgent:'urgent',not_suitable:'not_suitable',completed:'waiting_schedule'}[action] as ConversationStatus;}
+ static inbound(status:ConversationStatus,paused:boolean,attachment:boolean,options={attachmentHandoff:true,notifyWaiting:true,notifyNotSuitable:false}){
+  const next=paused||(attachment&&options.attachmentHandoff)?'human':status;
+  return {status:next as ConversationStatus,callAgent:next==='agent_active'&&!paused,notify:next==='human'||next==='urgent'||(next==='waiting_schedule'&&options.notifyWaiting)||(next==='not_suitable'&&options.notifyNotSuitable),reason:paused?'البوت متوقف':attachment?'مرفق':'رسالة جديدة'};
+ }
+ static staff(action:StaffAction,assignee:string|null,actor:string){if(assignee&&assignee!==actor)throw new Error('المحادثة عند موظف آخر');return {status:({take:'human',resume:'agent_active',secretary:'waiting_schedule',close:'not_suitable'} as const)[action],assignedStaffId:action==='take'?actor:null};}
+ static canCompose(status:ConversationStatus,lastClientMessageAt:string|Date,now=Date.now()){const elapsed=now-new Date(lastClientMessageAt).getTime();return (status==='human'||status==='urgent')&&elapsed>=0&&elapsed<24*60*60*1000;}
+}
+export function secretaryLink(number:string,client:{name:string|null;phone:string;category:string|null;summary:string|null}){
+ if(!phoneSchema.safeParse(number).success)throw new Error('أضف رقم واتساب السكرتيرة في الإعدادات أولًا');
+ const text=`العميل: ${client.name||client.phone}\nالهاتف: ${client.phone}\nتصنيف القضية: ${client.category||'غير محدد'}\nملخص الفريق: ${client.summary||'لم يُضف ملخص بعد'}\nبانتظار تحديد موعد`;
+ return `https://wa.me/${number.replace(/\D/g,'')}?text=${encodeURIComponent(text)}`;
+}
