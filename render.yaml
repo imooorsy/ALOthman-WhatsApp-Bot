@@ -1,0 +1,89 @@
+# Fields and paid plan IDs checked against https://render.com/docs/blueprint-spec
+# API stays at one instance because Socket.IO uses a single-node adapter.
+services:
+  - type: web
+    name: osman-web
+    runtime: node
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm --filter @osman/shared build && pnpm --filter @osman/web build
+    startCommand: pnpm --filter @osman/web start
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+  - type: web
+    name: osman-api
+    runtime: node
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    maxShutdownDelaySeconds: 120
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm --filter @osman/shared build && pnpm db:generate && pnpm --filter @osman/api build
+    preDeployCommand: pnpm db:migrate
+    startCommand: pnpm --filter @osman/api start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: osman-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_DOMAIN
+        sync: false
+      - key: WEB_ORIGINS
+        sync: false
+      - key: WA_PROVIDER
+        value: mock
+      - key: AGENT_MODE
+        value: mock
+      - key: AGENT_API_KEY
+        generateValue: true
+      - key: WA_PHONE_NUMBER_ID
+        sync: false
+      - key: WA_ACCESS_TOKEN
+        sync: false
+      - key: WA_VERIFY_TOKEN
+        sync: false
+      - key: WA_APP_SECRET
+        sync: false
+      - key: WA_API_VERSION
+        value: v22.0
+      # Optional HTTP agent: uncomment this variable AND the osman-agent service.
+      # Set AGENT_MODE=http. hostport omits a scheme; the adapter adds http://.
+      # - key: AGENT_URL
+      #   fromService:
+      #     name: osman-agent
+      #     type: pserv
+      #     property: hostport
+  # - type: pserv
+  #   name: osman-agent
+  #   runtime: docker
+  #   region: frankfurt
+  #   plan: 0.5c-512mb
+  #   numInstances: 1
+  #   dockerfilePath: ./agent/Dockerfile
+  #   dockerContext: ./agent
+  #   envVars:
+  #     - key: AGENT_API_KEY
+  #       fromService:
+  #         name: osman-api
+  #         type: web
+  #         envVarKey: AGENT_API_KEY
+databases:
+  - name: osman-db
+    region: frankfurt
+    plan: 0.1c-256mb
+    databaseName: osman
+    user: osman
+    ipAllowList: []

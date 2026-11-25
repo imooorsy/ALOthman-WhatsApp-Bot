@@ -10,6 +10,10 @@
     "db:migrate": "pnpm --filter @osman/api prisma migrate deploy",
     "seed": "pnpm --filter @osman/api seed",
     "test": "pnpm --filter @osman/api test",
+    "test:e2e": "pnpm --filter @osman/shared build && pnpm --filter @osman/api build && pnpm --filter @osman/api test -- --testPathPattern=pipeline.e2e",
     "test:agent-contract": "pnpm --filter @osman/api test:agent-contract"
+  },
+  "devDependencies": {
+    "prettier": "3.7.4"
   }
 }

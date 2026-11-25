@@ -1,2 +1,4 @@
-import {Chats} from '../../components/chats';
-export default function Page(){return <Chats/>;}
+import { Chats } from "../../components/chats";
+export default function Page() {
+  return <Chats />;
+}

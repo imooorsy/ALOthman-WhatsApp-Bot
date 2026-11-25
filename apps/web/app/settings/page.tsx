@@ -1,14 +1,551 @@
-'use client';
-import {useEffect,useState} from 'react';
-import type {OfficeConfig,Staff} from '@osman/shared';
-import {Shell,Switch,Toast} from '../../components/shell';
-import {api} from '../../components/api';
-export default function Settings(){
- const [config,setConfig]=useState<OfficeConfig>();const [user,setUser]=useState<Staff>();const [toast,setToast]=useState('');const [busy,setBusy]=useState(false);const [staff,setStaff]=useState<Staff[]>([]);
- const say=(s:string)=>{setToast(s);setTimeout(()=>setToast(''),5000);};
- useEffect(()=>{api<OfficeConfig>('/settings').then(setConfig).catch(e=>say(e.message));api<Staff>('/auth/me').then(u=>{setUser(u);if(u.role==='admin')api<Staff[]>('/staff').then(setStaff).catch(e=>say(e.message));}).catch(()=>{});},[]);
- const readonly=user?.role!=='admin';
- const change=(section:'office'|'contacts'|'rules',key:string,value:unknown)=>setConfig(c=>c?{...c,[section]:{...c[section],[key]:value}}:c);
- async function save(e:React.FormEvent){e.preventDefault();if(!config||readonly)return;if(!config.rules.paused&&!window.confirm('البوت يعمل حاليًا. هل تريد حفظ الإعدادات وتطبيقها على المحادثات التالية؟'))return;setBusy(true);try{const data=await api<OfficeConfig>('/settings',{method:'PUT',body:JSON.stringify(config)});setConfig(data);window.dispatchEvent(new CustomEvent('osman:paused',{detail:data.rules.paused}));say('تم حفظ التغييرات');}catch(e){say((e as Error).message);}finally{setBusy(false);}}
- return <Shell><section className="view on"><form onSubmit={save}><div className="hd"><h1>إعدادات عثمان</h1><button className="btn p" disabled={readonly||busy||!config}>{busy?'جارٍ الحفظ…':'حفظ التغييرات'}</button></div>{readonly&&<p className="l">الإعدادات متاحة للعرض فقط. يمكنك تعديل تفضيلات إشعاراتك.</p>}{config?<div className="sg"><fieldset className="pn" disabled={readonly||busy}><legend className="ph">معلومات المكتب</legend><div className="f">{([['name','اسم المكتب'],['intro','نبذة يعرّف بها عثمان المكتب'],['address','العنوان'],['workingHours','ساعات العمل']] as const).map(([key,label])=><div key={key}><label htmlFor={key}>{label}</label>{key==='intro'?<textarea id={key} value={config.office[key]} onChange={e=>change('office',key,e.target.value)}/>:<input id={key} required={key==='name'} value={config.office[key]} onChange={e=>change('office',key,e.target.value)}/>}</div>)}</div></fieldset><fieldset className="pn" disabled={readonly||busy}><legend className="ph">بيانات التواصل</legend><div className="f">{([['office','رقم المكتب للحالات العاجلة'],['secretary','رقم واتساب السكرتيرة'],['employee','رقم الموظف المستلم للمحادثات']] as const).map(([key,label])=><div key={key}><label htmlFor={'phone-'+key}>{label}</label><input id={'phone-'+key} type="tel" dir="ltr" pattern="\+[1-9][0-9]{7,14}" placeholder="+966" value={config.contacts[key]} onChange={e=>change('contacts',key,e.target.value)}/></div>)}</div></fieldset><fieldset className="pn" disabled={readonly||busy}><legend className="ph">الخدمات والأسعار <small>ريال، غير شاملة ضريبة القيمة المضافة</small></legend><div className="tw"><table><thead><tr><th>الخدمة</th><th>السعر</th><th>مفعّلة</th><th>حذف</th></tr></thead><tbody>{config.services.map((s,i)=><tr key={i}><td><input aria-label={'اسم الخدمة '+(i+1)} required value={s.name} onChange={e=>setConfig({...config,services:config.services.map((x,j)=>j===i?{...x,name:e.target.value}:x)})}/></td><td><input className="pi" aria-label={'سعر '+s.name} dir="ltr" type="number" min="0" step="0.01" required value={s.price} onChange={e=>setConfig({...config,services:config.services.map((x,j)=>j===i?{...x,price:Number(e.target.value)}:x)})}/></td><td><Switch disabled={readonly} label={'تفعيل '+s.name} value={s.active} onChange={active=>setConfig({...config,services:config.services.map((x,j)=>j===i?{...x,active}:x)})}/></td><td><button className="btn" type="button" aria-label={'حذف '+s.name} onClick={()=>setConfig({...config,services:config.services.filter((_,j)=>j!==i)})}>×</button></td></tr>)}</tbody></table></div><div className="f"><button type="button" className="btn" onClick={()=>setConfig({...config,services:[...config.services,{name:'',price:0,active:true,sort:config.services.length}]})}>+ إضافة خدمة</button></div></fieldset><fieldset className="pn" disabled={readonly||busy}><legend className="ph">قواعد القبول والتحويل</legend><div className="f"><label htmlFor="minimum">الحد الأدنى للتمثيل في المطالبات (ريال)</label><input id="minimum" dir="ltr" type="number" min="0" value={config.rules.minimumClaim} onChange={e=>change('rules','minimumClaim',Number(e.target.value))}/></div>{([['urgentHandoff','تحويل عاجل عند وجود مهلة قريبة'],['autoApology','اعتذار تلقائي للطلبات خارج النطاق'],['sendSummary','إرسال ملخص الفريق للموظف عند التحويل'],['paused','إيقاف البوت مؤقتًا']] as const).map(([key,label])=><div className="rl" key={key}><span>{label}</span><Switch label={label} value={config.rules[key]} disabled={readonly} onChange={v=>change('rules',key,v)}/></div>)}</fieldset><fieldset className="pn" disabled={readonly||busy}><legend className="ph">تصنيفات القضايا</legend>{config.categories.map((c,i)=><div className="category" key={i}><input required aria-label={'تصنيف '+(i+1)} value={c.name} onChange={e=>setConfig({...config,categories:config.categories.map((x,j)=>j===i?{...x,name:e.target.value}:x)})}/><label>مفعّل <Switch disabled={readonly} label={'تفعيل '+c.name} value={c.active} onChange={active=>setConfig({...config,categories:config.categories.map((x,j)=>j===i?{...x,active}:x)})}/></label><label>خارج النطاق <Switch disabled={readonly} label={'خارج النطاق '+c.name} value={c.outOfScope} onChange={outOfScope=>setConfig({...config,categories:config.categories.map((x,j)=>j===i?{...x,outOfScope}:x)})}/></label></div>)}<div className="f"><button className="btn" type="button" onClick={()=>setConfig({...config,categories:[...config.categories,{name:'',active:true,outOfScope:false,sort:config.categories.length}]})}>+ إضافة تصنيف</button></div></fieldset></div>:<p role="status">جارٍ تحميل الإعدادات…</p>}</form>{user&&<section className="pn prefs"><div className="ph">إعدادات الإشعارات<button type="button" className="btn" onClick={()=>window.dispatchEvent(new Event('osman:test-notification'))}>اختبار الإشعار</button></div>{(['sound','desktop'] as const).map(key=><div className="rl" key={key}><span>{key==='sound'?'الصوت':'إشعارات سطح المكتب'}</span><Switch label={key==='sound'?'الصوت':'إشعارات سطح المكتب'} value={user.notifyPrefs[key]} onChange={async value=>{const prefs={...user.notifyPrefs,[key]:value};try{await api('/settings/preferences',{method:'PUT',body:JSON.stringify(prefs)});setUser({...user,notifyPrefs:prefs});}catch(e){say((e as Error).message);}}}/></div>)}<div className="rl"><label htmlFor="volume">مستوى الصوت</label><input id="volume" type="range" min="0" max="1" step="0.1" value={user.notifyPrefs.volume} onChange={e=>setUser({...user,notifyPrefs:{...user.notifyPrefs,volume:Number(e.target.value)}})} onPointerUp={()=>api('/settings/preferences',{method:'PUT',body:JSON.stringify(user.notifyPrefs)}).catch(e=>say(e.message))}/></div></section>}{user?.role==='admin'&&<section className="pn prefs"><div className="ph">إدارة الموظفين</div><ul>{staff.map(s=><li key={s.id}>{s.name} — <bdi>{s.email}</bdi> — {s.role==='admin'?'مدير':'موظف'} {s.id!==user.id&&<><button className="btn" onClick={async()=>{try{const updated=await api<Staff>('/staff/'+s.id,{method:'PATCH',body:JSON.stringify({role:s.role==='admin'?'employee':'admin'})});setStaff(staff.map(x=>x.id===s.id?updated:x));say('تم تعديل الصلاحية');}catch(e){say((e as Error).message);}}}>تغيير الصلاحية</button><button className="btn" onClick={async()=>{if(!confirm('هل تريد حذف هذا الموظف؟'))return;try{await api('/staff/'+s.id,{method:'DELETE'});setStaff(staff.filter(x=>x.id!==s.id));say('تم حذف الموظف');}catch(e){say((e as Error).message);}}}>حذف الموظف</button></>}</li>)}</ul><form className="f" onSubmit={async e=>{e.preventDefault();const form=e.currentTarget;const f=new FormData(form);try{const s=await api<Staff>('/staff',{method:'POST',body:JSON.stringify(Object.fromEntries(f))});setStaff([...staff,s]);form.reset();say('تم إنشاء الموظف');}catch(e){say((e as Error).message);}}}><label htmlFor="staff-name">اسم الموظف</label><input id="staff-name" name="name" required/><label htmlFor="staff-email">البريد الإلكتروني</label><input id="staff-email" name="email" type="email" dir="ltr" required/><label htmlFor="staff-password">كلمة المرور (12 حرفًا على الأقل)</label><input id="staff-password" name="password" type="password" minLength={12} required autoComplete="new-password"/><label htmlFor="staff-role">الصلاحية</label><select id="staff-role" name="role"><option value="employee">موظف</option><option value="admin">مدير</option></select><button className="btn" type="submit">إضافة موظف</button></form></section>}</section><Toast message={toast}/></Shell>;
+"use client";
+import { useEffect, useRef, useState } from "react";
+import type { OfficeConfig, Staff } from "@osman/shared";
+import { Shell, Switch, Toast } from "../../components/shell";
+import { api } from "../../components/api";
+export default function Settings() {
+  const [config, setConfig] = useState<OfficeConfig>();
+  const savedPause = useRef(true);
+  const [user, setUser] = useState<Staff>();
+  const [toast, setToast] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const say = (s: string) => {
+    setToast(s);
+    setTimeout(() => setToast(""), 5000);
+  };
+  useEffect(() => {
+    api<OfficeConfig>("/settings")
+      .then((value) => {
+        setConfig(value);
+        savedPause.current = value.rules.paused;
+      })
+      .catch((e) => say(e.message));
+    api<Staff>("/auth/me")
+      .then((u) => {
+        setUser(u);
+        if (u.role === "admin")
+          api<Staff[]>("/staff")
+            .then(setStaff)
+            .catch((e) => say(e.message));
+      })
+      .catch(() => {});
+  }, []);
+  const readonly = user?.role !== "admin";
+  const change = (
+    section: "office" | "contacts" | "rules",
+    key: string,
+    value: unknown,
+  ) =>
+    setConfig((c) =>
+      c ? { ...c, [section]: { ...c[section], [key]: value } } : c,
+    );
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!config || readonly) return;
+    if (
+      !savedPause.current &&
+      !window.confirm(
+        "البوت يعمل حاليًا. هل تريد حفظ الإعدادات وتطبيقها على المحادثات التالية؟",
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      const data = await api<OfficeConfig>("/settings", {
+        method: "PUT",
+        body: JSON.stringify(config),
+      });
+      setConfig(data);
+      savedPause.current = data.rules.paused;
+      window.dispatchEvent(
+        new CustomEvent("osman:paused", { detail: data.rules.paused }),
+      );
+      say("تم حفظ التغييرات");
+    } catch (e) {
+      say((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Shell>
+      <section className="view on">
+        <form onSubmit={save}>
+          <div className="hd">
+            <h1>إعدادات عثمان</h1>
+            <button className="btn p" disabled={readonly || busy || !config}>
+              {busy ? "جارٍ الحفظ…" : "حفظ التغييرات"}
+            </button>
+          </div>
+          {readonly && (
+            <p className="l">
+              الإعدادات متاحة للعرض فقط. يمكنك تعديل تفضيلات إشعاراتك.
+            </p>
+          )}
+          {config ? (
+            <div className="sg">
+              <fieldset className="pn" disabled={readonly || busy}>
+                <legend className="ph">معلومات المكتب</legend>
+                <div className="f">
+                  {(
+                    [
+                      ["name", "اسم المكتب"],
+                      ["intro", "نبذة يعرّف بها عثمان المكتب"],
+                      ["address", "العنوان"],
+                      ["workingHours", "ساعات العمل"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <div key={key}>
+                      <label htmlFor={key}>{label}</label>
+                      {key === "intro" ? (
+                        <textarea
+                          id={key}
+                          value={config.office[key]}
+                          onChange={(e) =>
+                            change("office", key, e.target.value)
+                          }
+                        />
+                      ) : (
+                        <input
+                          id={key}
+                          required={key === "name"}
+                          value={config.office[key]}
+                          onChange={(e) =>
+                            change("office", key, e.target.value)
+                          }
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset className="pn" disabled={readonly || busy}>
+                <legend className="ph">بيانات التواصل</legend>
+                <div className="f">
+                  {(
+                    [
+                      ["office", "رقم المكتب للحالات العاجلة"],
+                      ["secretary", "رقم واتساب السكرتيرة"],
+                      ["employee", "رقم الموظف المستلم للمحادثات"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <div key={key}>
+                      <label htmlFor={"phone-" + key}>{label}</label>
+                      <input
+                        id={"phone-" + key}
+                        type="tel"
+                        dir="ltr"
+                        pattern="\+[1-9][0-9]{7,14}"
+                        placeholder="+966"
+                        value={config.contacts[key]}
+                        onChange={(e) =>
+                          change("contacts", key, e.target.value)
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset className="pn" disabled={readonly || busy}>
+                <legend className="ph">
+                  الخدمات والأسعار{" "}
+                  <small>ريال، غير شاملة ضريبة القيمة المضافة</small>
+                </legend>
+                <div className="tw">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>الخدمة</th>
+                        <th>السعر</th>
+                        <th>مفعّلة</th>
+                        <th>حذف</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {config.services.map((s, i) => (
+                        <tr key={i}>
+                          <td>
+                            <input
+                              aria-label={"اسم الخدمة " + (i + 1)}
+                              required
+                              value={s.name}
+                              onChange={(e) =>
+                                setConfig({
+                                  ...config,
+                                  services: config.services.map((x, j) =>
+                                    j === i
+                                      ? { ...x, name: e.target.value }
+                                      : x,
+                                  ),
+                                })
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              className="pi"
+                              aria-label={"سعر " + s.name}
+                              dir="ltr"
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              required
+                              value={s.price}
+                              onChange={(e) =>
+                                setConfig({
+                                  ...config,
+                                  services: config.services.map((x, j) =>
+                                    j === i
+                                      ? { ...x, price: Number(e.target.value) }
+                                      : x,
+                                  ),
+                                })
+                              }
+                            />
+                          </td>
+                          <td>
+                            <Switch
+                              disabled={readonly}
+                              label={"تفعيل " + s.name}
+                              value={s.active}
+                              onChange={(active) =>
+                                setConfig({
+                                  ...config,
+                                  services: config.services.map((x, j) =>
+                                    j === i ? { ...x, active } : x,
+                                  ),
+                                })
+                              }
+                            />
+                          </td>
+                          <td>
+                            <button
+                              className="btn"
+                              type="button"
+                              aria-label={"حذف " + s.name}
+                              onClick={() =>
+                                setConfig({
+                                  ...config,
+                                  services: config.services.filter(
+                                    (_, j) => j !== i,
+                                  ),
+                                })
+                              }
+                            >
+                              ×
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="f">
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() =>
+                      setConfig({
+                        ...config,
+                        services: [
+                          ...config.services,
+                          {
+                            name: "",
+                            price: 0,
+                            active: true,
+                            sort: config.services.length,
+                          },
+                        ],
+                      })
+                    }
+                  >
+                    + إضافة خدمة
+                  </button>
+                </div>
+              </fieldset>
+              <fieldset className="pn" disabled={readonly || busy}>
+                <legend className="ph">قواعد القبول والتحويل</legend>
+                <div className="f">
+                  <label htmlFor="minimum">
+                    الحد الأدنى للتمثيل في المطالبات (ريال)
+                  </label>
+                  <input
+                    id="minimum"
+                    dir="ltr"
+                    type="number"
+                    min="0"
+                    value={config.rules.minimumClaim}
+                    onChange={(e) =>
+                      change("rules", "minimumClaim", Number(e.target.value))
+                    }
+                  />
+                </div>
+                {(
+                  [
+                    ["urgentHandoff", "تحويل عاجل عند وجود مهلة قريبة"],
+                    ["autoApology", "اعتذار تلقائي للطلبات خارج النطاق"],
+                    ["sendSummary", "إرسال ملخص الفريق للموظف عند التحويل"],
+                    ["paused", "إيقاف البوت مؤقتًا"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <div className="rl" key={key}>
+                    <span>{label}</span>
+                    <Switch
+                      label={label}
+                      value={config.rules[key]}
+                      disabled={readonly}
+                      onChange={(v) => change("rules", key, v)}
+                    />
+                  </div>
+                ))}
+              </fieldset>
+              <fieldset className="pn" disabled={readonly || busy}>
+                <legend className="ph">تصنيفات القضايا</legend>
+                {config.categories.map((c, i) => (
+                  <div className="category" key={i}>
+                    <input
+                      required
+                      aria-label={"تصنيف " + (i + 1)}
+                      value={c.name}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          categories: config.categories.map((x, j) =>
+                            j === i ? { ...x, name: e.target.value } : x,
+                          ),
+                        })
+                      }
+                    />
+                    <label>
+                      مفعّل{" "}
+                      <Switch
+                        disabled={readonly}
+                        label={"تفعيل " + c.name}
+                        value={c.active}
+                        onChange={(active) =>
+                          setConfig({
+                            ...config,
+                            categories: config.categories.map((x, j) =>
+                              j === i ? { ...x, active } : x,
+                            ),
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      خارج النطاق{" "}
+                      <Switch
+                        disabled={readonly}
+                        label={"خارج النطاق " + c.name}
+                        value={c.outOfScope}
+                        onChange={(outOfScope) =>
+                          setConfig({
+                            ...config,
+                            categories: config.categories.map((x, j) =>
+                              j === i ? { ...x, outOfScope } : x,
+                            ),
+                          })
+                        }
+                      />
+                    </label>
+                  </div>
+                ))}
+                <div className="f">
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() =>
+                      setConfig({
+                        ...config,
+                        categories: [
+                          ...config.categories,
+                          {
+                            name: "",
+                            active: true,
+                            outOfScope: false,
+                            sort: config.categories.length,
+                          },
+                        ],
+                      })
+                    }
+                  >
+                    + إضافة تصنيف
+                  </button>
+                </div>
+              </fieldset>
+            </div>
+          ) : (
+            <p role="status">جارٍ تحميل الإعدادات…</p>
+          )}
+        </form>
+        {user && (
+          <section className="pn prefs">
+            <div className="ph">
+              إعدادات الإشعارات
+              <button
+                type="button"
+                className="btn"
+                onClick={() =>
+                  window.dispatchEvent(new Event("osman:test-notification"))
+                }
+              >
+                اختبار الإشعار
+              </button>
+            </div>
+            {(["sound", "desktop"] as const).map((key) => (
+              <div className="rl" key={key}>
+                <span>{key === "sound" ? "الصوت" : "إشعارات سطح المكتب"}</span>
+                <Switch
+                  label={key === "sound" ? "الصوت" : "إشعارات سطح المكتب"}
+                  value={user.notifyPrefs[key]}
+                  onChange={async (value) => {
+                    const prefs = { ...user.notifyPrefs, [key]: value };
+                    try {
+                      await api("/settings/preferences", {
+                        method: "PUT",
+                        body: JSON.stringify(prefs),
+                      });
+                      setUser({ ...user, notifyPrefs: prefs });
+                    } catch (e) {
+                      say((e as Error).message);
+                    }
+                  }}
+                />
+              </div>
+            ))}
+            <div className="rl">
+              <label htmlFor="volume">مستوى الصوت</label>
+              <input
+                id="volume"
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={user.notifyPrefs.volume}
+                onChange={(e) =>
+                  setUser({
+                    ...user,
+                    notifyPrefs: {
+                      ...user.notifyPrefs,
+                      volume: Number(e.target.value),
+                    },
+                  })
+                }
+                onBlur={() =>
+                  api("/settings/preferences", {
+                    method: "PUT",
+                    body: JSON.stringify(user.notifyPrefs),
+                  }).catch((e) => say(e.message))
+                }
+              />
+            </div>
+          </section>
+        )}
+        {user?.role === "admin" && (
+          <section className="pn prefs">
+            <div className="ph">إدارة الموظفين</div>
+            <ul>
+              {staff.map((s) => (
+                <li key={s.id}>
+                  {s.name} — <bdi>{s.email}</bdi> —{" "}
+                  {s.role === "admin" ? "مدير" : "موظف"}{" "}
+                  {s.id !== user.id && (
+                    <>
+                      <button
+                        className="btn"
+                        onClick={async () => {
+                          try {
+                            const updated = await api<Staff>("/staff/" + s.id, {
+                              method: "PATCH",
+                              body: JSON.stringify({
+                                role: s.role === "admin" ? "employee" : "admin",
+                              }),
+                            });
+                            setStaff(
+                              staff.map((x) => (x.id === s.id ? updated : x)),
+                            );
+                            say("تم تعديل الصلاحية");
+                          } catch (e) {
+                            say((e as Error).message);
+                          }
+                        }}
+                      >
+                        تغيير الصلاحية
+                      </button>
+                      <button
+                        className="btn"
+                        onClick={async () => {
+                          if (!confirm("هل تريد حذف هذا الموظف؟")) return;
+                          try {
+                            await api("/staff/" + s.id, { method: "DELETE" });
+                            setStaff(staff.filter((x) => x.id !== s.id));
+                            say("تم حذف الموظف");
+                          } catch (e) {
+                            say((e as Error).message);
+                          }
+                        }}
+                      >
+                        حذف الموظف
+                      </button>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <form
+              className="f"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const f = new FormData(form);
+                try {
+                  const s = await api<Staff>("/staff", {
+                    method: "POST",
+                    body: JSON.stringify(Object.fromEntries(f)),
+                  });
+                  setStaff([...staff, s]);
+                  form.reset();
+                  say("تم إنشاء الموظف");
+                } catch (e) {
+                  say((e as Error).message);
+                }
+              }}
+            >
+              <label htmlFor="staff-name">اسم الموظف</label>
+              <input id="staff-name" name="name" required />
+              <label htmlFor="staff-email">البريد الإلكتروني</label>
+              <input
+                id="staff-email"
+                name="email"
+                type="email"
+                dir="ltr"
+                required
+              />
+              <label htmlFor="staff-password">
+                كلمة المرور (12 حرفًا على الأقل)
+              </label>
+              <input
+                id="staff-password"
+                name="password"
+                type="password"
+                minLength={12}
+                required
+                autoComplete="new-password"
+              />
+              <label htmlFor="staff-role">الصلاحية</label>
+              <select id="staff-role" name="role">
+                <option value="employee">موظف</option>
+                <option value="admin">مدير</option>
+              </select>
+              <button className="btn" type="submit">
+                إضافة موظف
+              </button>
+            </form>
+          </section>
+        )}
+      </section>
+      <Toast message={toast} />
+    </Shell>
+  );
 }

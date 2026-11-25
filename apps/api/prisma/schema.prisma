@@ -128,3 +128,11 @@ model CaseCategory {
  outOfScope Boolean @default(false)
  sort Int
 }
+model WebhookInbox {
+ id String @id
+ kind String
+ payload Json
+ processedAt DateTime?
+ createdAt DateTime @default(now())
+ @@index([processedAt,createdAt])
+}

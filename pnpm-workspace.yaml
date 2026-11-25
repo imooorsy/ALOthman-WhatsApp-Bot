@@ -2,8 +2,19 @@ packages:
   - apps/*
   - packages/*
 onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
+  - "@nestjs/core"
+  - "@prisma/client"
+  - "@prisma/engines"
   - prisma
   - bcrypt
   - sharp
+  - esbuild
+# Patched transitive releases; verified by the production audit and integration suite.
+overrides:
+  multer: ^2.5.0
+  file-type: ^21.3.2
+  effect: ^3.22.1
+  postcss: ^8.5.23
+  qs: ^6.16.1
+  body-parser@1: ^1.20.9
+  deepmerge-ts: ^8.0.0
