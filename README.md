@@ -20,6 +20,8 @@ Production requires HTTPS, explicit WEB_ORIGINS and COOKIE_DOMAIN. The developme
 
 The API development command compiles before starting and watches compiled output. During API development, run `pnpm --filter @osman/api exec tsc --watch` in another terminal for continuous TypeScript compilation. Next.js development uses its normal live reload. All timestamps in the interface use Asia/Riyadh with Western digits.
 
+The combined development runner uses `--no-bail` so an API restart/error does not terminate the runner while leaving the web child detached. For independent restarts, use separate terminals for `pnpm --filter @osman/api dev` and `pnpm --filter @osman/web dev`. If login returns 201 but `/chats` does not load, check that the web server itself responds; restarting the API alone cannot repair a stalled web process. See [pnpm runner behavior](https://pnpm.io/10.x/cli/recursive#--no-bail).
+
 ## Mock message flow
 
 Sign in, then use `POST /dev/inbound` on the API with the session cookie and an allowed Origin:

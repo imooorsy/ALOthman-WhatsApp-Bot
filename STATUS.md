@@ -53,3 +53,10 @@
 - The real agent is intentionally absent. Follow docs/AGENT_INTEGRATION.md to install its code and run the active-mode contract command. The HTTP container is a deliberate 503 placeholder until replaced.
 - Web Push and data retention remain phase-2/TODO work as explicitly requested. Exactly-once outbound delivery across a crash after Meta accepts a send is not guaranteed; the README explains reconciliation.
 - Local preview processes were stopped after checks; the local Docker database remains available. Start the application with pnpm dev.
+
+## Local login/navigation recovery
+- Reproduced a web-only hang: /login and /chats timed out while API /health remained 200 and POST /auth/login returned 201.
+- The earlier combined runner had exited after the API was restarted, leaving the Next.js child listening but stalled. Restarted the web service in an independent retained session.
+- Rechecked login (201), cookie-backed /auth/me (200), chats API (200, five sample conversations), /chats document (200), all seven page script assets (200), and credentialed CORS headers.
+- Added --no-bail to pnpm dev and documented independent service restart commands. The updated command's workspace selection/options were validated.
+- API and web are currently running independently for local testing. Browser UI automation remains unavailable, so no automated browser interaction is claimed.
