@@ -72,3 +72,9 @@
 - Workspace and web TypeScript checks passed. Patched Firebase's transitive gRPC dependency; the production audit reports no known vulnerabilities.
 - The supplied service-account JSON was found in the workspace, verified against the configured Firebase project, excluded from Git, and referenced only by the ignored API environment file. All Firebase configuration inputs are now available.
 - Push enrollment and background delivery are not active yet; the service worker, authenticated registrations and backend sender remain to be implemented.
+
+## Repeated desktop notification test fix
+- Each test click now uses a unique notification tag and explicitly requests re-alerting; the previous test notification is closed. Test clicks focus the dashboard instead of navigating to a nonexistent test conversation.
+- Real conversation alerts retain their grouping tag with re-alerting enabled. Unsupported browsers, blocked permission, disabled desktop preferences and notification creation errors now produce Arabic guidance instead of silent sound-only behavior.
+- Prevented a late initial preferences response from overwriting preferences changed after enabling notifications.
+- Two regression tests passed for distinct repeated-test tags and grouped real-alert re-alerting. Workspace TypeScript checks passed; visual OS banner display still needs manual browser verification.

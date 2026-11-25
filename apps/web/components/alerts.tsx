@@ -4,6 +4,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { Chat, Staff, StaffNotification, events } from "@osman/shared";
 import { API, api } from "./api";
+import {
+  createTestDesktopNotification,
+  desktopNotificationOptions,
+} from "./notification-options";
 let audio: AudioContext | undefined;
 function sound(urgent: boolean, volume: number) {
   if (!audio || audio.state !== "running") return;
@@ -47,6 +51,7 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
   }, [notices, onBadge]);
   useEffect(() => {
     let alive = true;
+    let prefsChanged = false;
     const localDesktop = new Map<string, Notification>();
     async function fetchMissed() {
       try {
@@ -72,26 +77,34 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
         "Notification" in window &&
         Notification.permission === "granted"
       ) {
-        const desktop = new Notification(
-          urgent ? "محادثة عاجلة" : "متابعة محادثة",
-          {
-            body: [
-              n.conversation.client.phone,
-              n.conversation.category,
-              n.reason,
-            ]
-              .filter(Boolean)
-              .join(" · "),
-            tag: n.conversationId,
-            requireInteraction: urgent,
-          },
-        );
-        localDesktop.set(n.conversationId, desktop);
-        desktop.onclick = () => {
-          window.focus();
-          router.push("/chats/" + n.conversationId);
-          desktop.close();
-        };
+        try {
+          const desktop = new Notification(
+            urgent ? "محادثة عاجلة" : "متابعة محادثة",
+            desktopNotificationOptions(
+              [n.conversation.client.phone, n.conversation.category, n.reason]
+                .filter(Boolean)
+                .join(" · "),
+              n.conversationId,
+              urgent,
+            ),
+          );
+          localDesktop.set(n.conversationId, desktop);
+          desktop.onerror = () =>
+            setHint(
+              "تعذر عرض إشعار سطح المكتب؛ تحقق من إعدادات المتصفح والنظام.",
+            );
+          desktop.onclose = () => {
+            if (localDesktop.get(n.conversationId) === desktop)
+              localDesktop.delete(n.conversationId);
+          };
+          desktop.onclick = () => {
+            window.focus();
+            router.push("/chats/" + n.conversationId);
+            desktop.close();
+          };
+        } catch {
+          setHint("تعذر إنشاء إشعار سطح المكتب؛ تحقق من إعدادات المتصفح.");
+        }
       }
     }
     function receive(
@@ -150,26 +163,70 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
     });
     api<Staff>("/auth/me")
       .then((u) => {
-        prefs.current = u.notifyPrefs;
+        if (!prefsChanged) prefs.current = u.notifyPrefs;
       })
       .catch(() => {});
     void fetchMissed();
     const prefHandler = (e: Event) => {
+      prefsChanged = true;
       prefs.current = (e as CustomEvent<Staff["notifyPrefs"]>).detail;
     };
     window.addEventListener("osman:prefs", prefHandler);
-    const test = () =>
-      present({
-        id: "test",
-        conversationId: "test",
-        type: "handoff",
-        reason: "هذا إشعار تجريبي",
-        conversation: {
-          client: { phone: "اختبار الإشعارات" },
-          category: null,
-        } as Chat,
-        createdAt: new Date().toISOString(),
-      });
+    async function testDesktop() {
+      if (prefs.current.sound) {
+        try {
+          audio ??= new AudioContext();
+          await audio.resume();
+          sound(false, prefs.current.volume);
+        } catch {
+          /* Desktop notifications can still work without audio. */
+        }
+      }
+      if (!("Notification" in window)) {
+        setHint("هذا المتصفح لا يدعم إشعارات سطح المكتب.");
+        return;
+      }
+      if (Notification.permission !== "granted") {
+        setEnabled(false);
+        setHint(
+          Notification.permission === "denied"
+            ? "إشعارات سطح المكتب محظورة؛ اسمح بها من إعدادات الموقع في المتصفح."
+            : "اضغط تفعيل الإشعارات واسمح بإشعارات سطح المكتب أولًا.",
+        );
+        return;
+      }
+      if (!prefs.current.desktop) {
+        setHint(
+          "إشعارات سطح المكتب متوقفة في تفضيلاتك؛ فعّلها من الإعدادات أولًا.",
+        );
+        return;
+      }
+      try {
+        const { title, options } = createTestDesktopNotification();
+        localDesktop.get("__test")?.close();
+        const desktop = new Notification(title, options);
+        localDesktop.set("__test", desktop);
+        desktop.onclick = () => {
+          window.focus();
+          desktop.close();
+        };
+        desktop.onclose = () => {
+          if (localDesktop.get("__test") === desktop)
+            localDesktop.delete("__test");
+        };
+        desktop.onerror = () =>
+          setHint(
+            "تعذر عرض الإشعار؛ تحقق من إشعارات Chrome في إعدادات النظام.",
+          );
+        setEnabled(true);
+        setHint("تم إرسال إشعار تجريبي جديد إلى نظام التشغيل.");
+      } catch {
+        setHint("تعذر إنشاء إشعار سطح المكتب؛ تحقق من إعدادات المتصفح.");
+      }
+    }
+    const test = () => {
+      void testDesktop();
+    };
     window.addEventListener("focus", markOpen);
     document.addEventListener("visibilitychange", markOpen);
     window.addEventListener("osman:test-notification", test);
