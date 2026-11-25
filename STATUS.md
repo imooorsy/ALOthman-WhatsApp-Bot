@@ -70,4 +70,5 @@
 ## Firebase preparation
 - Added Firebase 13.4 and a browser-only, lazily loaded Cloud Messaging initializer. Public project configuration and the supplied public VAPID key are in ignored local web environment files; Analytics is not initialized.
 - Workspace and web TypeScript checks passed. Patched Firebase's transitive gRPC dependency; the production audit reports no known vulnerabilities.
-- Push enrollment and background delivery are not active yet. Waiting for the local path to the private service-account JSON before wiring the service worker, authenticated registrations and backend sender.
+- The supplied service-account JSON was found in the workspace, verified against the configured Firebase project, excluded from Git, and referenced only by the ignored API environment file. All Firebase configuration inputs are now available.
+- Push enrollment and background delivery are not active yet; the service worker, authenticated registrations and backend sender remain to be implemented.

@@ -7,3 +7,5 @@ dist/
 coverage/
 *.tsbuildinfo
 test-results/
+# Private Firebase server credentials must never be committed.
+*firebase-adminsdk*.json
