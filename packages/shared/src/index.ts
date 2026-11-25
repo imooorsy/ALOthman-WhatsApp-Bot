@@ -27,6 +27,7 @@ export const events = {updated:'conversation.updated',inbound:'message.inbound',
 export type ChatMessage={id:string;conversationId:string;direction:'client'|'agent'|'staff';type:'text'|'image'|'audio'|'document'|'other';text:string;deliveryStatus:string;createdAt:string;agentConfigVersion:number|null};
 export type Chat={id:string;clientId:string;client:{phone:string;name:string|null;detectedCategory:string|null;shortDescription:string|null};status:ConversationStatus;assignedStaffId:string|null;assignedStaff:{id:string;name:string}|null;category:string|null;summary:string|null;urgentReason:string|null;unreadCount:number;lastClientMessageAt:string;lastActivityAt:string;version:number;messages:ChatMessage[]};
 export type StaffAction='take'|'resume'|'secretary'|'close';
+export type StaffNotification={id:string;type:string;conversationId:string;reason:string;createdAt:string;conversation:Chat};
 export class ConversationMachine {
  static agentAction(action:AgentResponse['action']):ConversationStatus{return {continue:'agent_active',handoff:'human',handoff_urgent:'urgent',not_suitable:'not_suitable',completed:'waiting_schedule'}[action] as ConversationStatus;}
  static inbound(status:ConversationStatus,paused:boolean,attachment:boolean,options={attachmentHandoff:true,notifyWaiting:true,notifyNotSuitable:false}){

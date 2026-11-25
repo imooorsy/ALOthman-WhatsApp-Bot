@@ -4,5 +4,6 @@ export async function api<T>(path:string,options:RequestInit={}):Promise<T>{
  if(response.status===401){if(typeof window!=='undefined'&&!window.location.pathname.startsWith('/login'))window.location.assign('/login');throw new Error('يرجى تسجيل الدخول');}
  const data=await response.json();
  if(!response.ok)throw new Error(typeof data.message==='string'?data.message:'تعذر تنفيذ الطلب؛ تحقق من البيانات وحاول مجددًا');
+ if(path==='/settings/preferences'&&typeof window!=='undefined')window.dispatchEvent(new CustomEvent('osman:prefs',{detail:data.notifyPrefs}));
  return data as T;
 }

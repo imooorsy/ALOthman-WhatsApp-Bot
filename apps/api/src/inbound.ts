@@ -8,11 +8,13 @@ import {AgentService} from './agent';
 import {WhatsAppProvider} from './whatsapp';
 import {lockConversation} from './chats';
 import {QueueService} from './queue';
+import {RealtimeGateway} from './realtime';
+import {events} from '@osman/shared';
 export const inboundSchema=z.object({id:z.string().min(1).max(200),phone:phoneSchema,text:z.string().max(10000),type:z.enum(['text','image','audio','document','other']).default('text'),at:z.string().datetime().optional()});
 export type Inbound=z.infer<typeof inboundSchema>;
 @Injectable()
 export class InboundService {
- constructor(private db:Db,private settings:SettingsService,private agent:AgentService,private wa:WhatsAppProvider,private queue:QueueService){}
+ constructor(private db:Db,private settings:SettingsService,private agent:AgentService,private wa:WhatsAppProvider,private queue:QueueService,private realtime:RealtimeGateway){}
  async receive(input:Inbound){
   const config=await this.settings.get();
   const result=await this.db.$transaction(async tx=>{
@@ -30,19 +32,21 @@ export class InboundService {
    await tx.message.create({data:{conversationId:chat.id,waMessageId:input.id,direction:'client',type:input.type,text:input.type==='text'?input.text:`[مرفق: ${labels[input.type]}]`,deliveryStatus:'received',createdAt:at,processedAt:policy.callAgent?null:new Date()}});
    await tx.conversation.update({where:{id:chat.id},data:{status:policy.status,unreadCount:{increment:1},version:{increment:1},lastActivityAt:new Date(),lastClientMessageAt:at>chat.lastClientMessageAt?at:chat.lastClientMessageAt}});
    if(policy.status!==chat.status)await tx.conversationEvent.create({data:{conversationId:chat.id,type:'inbound.handoff',payload:{reason:policy.reason,previousStatus:chat.status,status:policy.status}}});
-   if(policy.notify)await tx.notification.create({data:{conversationId:chat.id,type:policy.status==='urgent'?'urgent':'message',reason:policy.reason}});
+   const notification=policy.notify?await tx.notification.create({data:{conversationId:chat.id,type:policy.status==='urgent'?'urgent':'message',reason:policy.reason}}):null;
    if(policy.callAgent)await this.queue.enqueue(chat.id,tx);
-   return {id:chat.id,duplicate:false};
+   return {id:chat.id,duplicate:false,notificationId:notification?.id};
   });
+  if(!result.duplicate){this.realtime.changed(result.id);if(result.notificationId)await this.realtime.notify(result.id,result.notificationId,events.inbound);}
   return result;
  }
  async process(id:string){
-  await this.db.$transaction(async tx=>{
+  const notice=await this.db.$transaction(async tx=>{
    await lockConversation(tx,id);const c=await tx.conversation.findUniqueOrThrow({where:{id},include:{client:true,messages:{orderBy:{createdAt:'asc'}}}});
    const pending=c.messages.filter(m=>m.direction==='client'&&!m.processedAt);if(!pending.length)return;
    const config=await this.settings.get();
    if(Date.now()-c.lastActivityAt.getTime()<Number(process.env.DEBOUNCE_MS||3000)){await this.queue.enqueue(id,tx);return;}
    if(c.status!=='agent_active'||config.rules.paused){await tx.message.updateMany({where:{id:{in:pending.map(m=>m.id)}},data:{processedAt:new Date()}});return;}
+   let notificationId:string|undefined;
    try{
     const response=await this.agent.respond({conversationId:id,clientPhone:c.client.phone,history:c.messages.filter(m=>!pending.some(p=>p.id===m.id)).map(m=>({role:m.direction==='agent'?'assistant':m.direction,text:m.type==='text'?m.text:'[attachment]',at:m.createdAt.toISOString()})),newMessages:pending.map(m=>m.type==='text'?m.text:'[attachment]'),config});
     const status=ConversationMachine.agentAction(response.action);
@@ -50,12 +54,14 @@ export class InboundService {
     await tx.conversation.update({where:{id},data:{status,category:response.category||c.category,summary:response.summary||c.summary,urgentReason:response.urgentReason,version:{increment:1},lastActivityAt:new Date()}});
     await tx.client.update({where:{id:c.clientId},data:{name:response.clientName||c.client.name,detectedCategory:response.category||c.client.detectedCategory,shortDescription:response.summary?.slice(0,300)||c.client.shortDescription}});
     await tx.conversationEvent.create({data:{conversationId:id,type:'agent.'+response.action,payload:{previousStatus:c.status,status,configVersion:config.version}}});
-    if(status==='human'||status==='urgent')await tx.notification.create({data:{conversationId:id,type:status==='urgent'?'urgent':'handoff',reason:response.urgentReason||'طلب متابعة موظف'}});
+    if(status==='human'||status==='urgent')notificationId=(await tx.notification.create({data:{conversationId:id,type:status==='urgent'?'urgent':'handoff',reason:response.urgentReason||'طلب متابعة موظف'}})).id;
    }catch{
-    await tx.conversation.update({where:{id},data:{status:'human',version:{increment:1}}});await tx.conversationEvent.create({data:{conversationId:id,type:'agent_error',payload:{reason:'تعذر رد عثمان؛ يلزم متابعة العميل'}}});await tx.notification.create({data:{conversationId:id,type:'agent_error',reason:'تعذر رد عثمان؛ يلزم متابعة العميل'}});
+    await tx.conversation.update({where:{id},data:{status:'human',version:{increment:1}}});await tx.conversationEvent.create({data:{conversationId:id,type:'agent_error',payload:{reason:'تعذر رد عثمان؛ يلزم متابعة العميل'}}});notificationId=(await tx.notification.create({data:{conversationId:id,type:'agent_error',reason:'تعذر رد عثمان؛ يلزم متابعة العميل'}})).id;
    }
    await tx.message.updateMany({where:{id:{in:pending.map(m=>m.id)}},data:{processedAt:new Date()}});
+   return notificationId;
   },{timeout:60000});
+  this.realtime.changed(id);if(notice)await this.realtime.notify(id,notice,events.handoff);
  }
 }
 @Controller('dev') @UseGuards(AuthGuard) @Admin()
