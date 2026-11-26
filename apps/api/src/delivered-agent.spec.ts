@@ -12,11 +12,14 @@ const adapter = require(
     env: NodeJS.ProcessEnv;
     fetcher: typeof fetch;
   }): AgentPort;
-  mapAction(value: {
-    action: string;
-    priority?: string;
-    status?: string;
-  }): string;
+  mapAction(
+    value: {
+      action: string;
+      priority?: string;
+      status?: string;
+    },
+    mode?: "original" | "flexible",
+  ): string;
 };
 const request: AgentRequest = {
   conversationId: "contract",
@@ -59,8 +62,8 @@ describe("delivered agent adapter", () => {
     ["existing_client", "handoff"],
     ["job", "not_suitable"],
     ["marketing", "not_suitable"],
-    ["close", "handoff"],
-    ["silent", "handoff"],
+    ["close", "continue"],
+    ["silent", "continue"],
   ])("maps %s to %s", (action, expected) =>
     expect(adapter.mapAction({ action })).toBe(expected),
   );
@@ -130,15 +133,13 @@ describe("delivered agent adapter", () => {
       adapter.createAgent({ env: {}, fetcher }).respond(request),
     ).rejects.toThrow();
     await expect(
-      adapter
-        .createAgent({ env, fetcher })
-        .respond({
-          ...request,
-          config: {
-            ...request.config,
-            rules: { ...request.config.rules, paused: true },
-          },
-        }),
+      adapter.createAgent({ env, fetcher }).respond({
+        ...request,
+        config: {
+          ...request.config,
+          rules: { ...request.config.rules, paused: true },
+        },
+      }),
     ).rejects.toThrow();
     expect(fetcher).not.toHaveBeenCalled();
     await expect(

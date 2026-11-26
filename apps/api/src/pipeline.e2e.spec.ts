@@ -349,8 +349,8 @@ describeDatabase("webhook → PostgreSQL queue → agent → state → socket", 
       expect(
         (await db.conversation.findUniqueOrThrow({ where: { id: c.id } }))
           .status,
-      ).toBe("human");
-      expect(realtime.notify).toHaveBeenCalled();
+      ).toBe("agent_active");
+      expect(realtime.notify).not.toHaveBeenCalled();
     } finally {
       await db.conversation.delete({ where: { id: c.id } });
       await db.client.delete({ where: { id: client.id } });
