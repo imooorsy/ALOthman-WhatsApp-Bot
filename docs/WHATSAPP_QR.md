@@ -16,7 +16,7 @@ The linking script waits for Evolution to finish starting before its first authe
 
 Setup is idempotent and has already been run locally. It generates random private keys in ignored `.local/evolution.env` and `apps/api/.env`. It keeps existing model/WhatsApp modes. The compose file pins the same Evolution v2.3.7 release as the engineer's trial setup, binds port 8080 to localhost, and persists the linked session and an independent connector PostgreSQL database. Docker pulls the images on first run. Wait for the connector to become available before running the link script. `docker compose -f compose.evolution.yaml ps` shows its state.
 
-The link script creates the `osman` instance, subscribes to MESSAGES_UPSERT and MESSAGES_UPDATE, installs an authenticated webhook and refreshes `.local/whatsapp-qr.png` for up to two minutes. Open that image from Explorer while the script runs. On the phone containing the number to connect, choose **WhatsApp → Linked devices → Link a device**, then scan the image. The script reports connected and removes the QR image; if it times out, rerun for a fresh code. It does not print API secrets/pairing codes or send messages. Treat the QR as a login credential and do not share it.
+The link script creates the `osman` instance, subscribes to MESSAGES_UPSERT and MESSAGES_UPDATE, installs an authenticated webhook and refreshes `.local/whatsapp-qr.png` for up to ten minutes. Open that image from Explorer while the script runs. On the phone containing the number to connect, choose **WhatsApp → Linked devices → Link a device**, then scan the image. The script reports connected and removes the QR image; if it times out, rerun for a fresh code. It does not print API secrets/pairing codes or send messages. Treat the QR as a login credential and do not share it.
 
 Then edit **apps/api/.env**:
 
@@ -34,6 +34,10 @@ The setup script already fills EVOLUTION_URL, EVOLUTION_INSTANCE, EVOLUTION_API_
 For a connector-only trial, keep `AGENT_MODE=mock`: incoming messages use deterministic mock replies sent to the linked test phone. Use a test number, send from a different phone, and then verify `/chats`. Do not mistake mock replies for the real agent. In Settings, enable تشغيل نموذج عثمان and save before the intended agent test.
 
 ## Webhook and routing
+
+### Local HTTPS inspection certificates
+
+If Evolution stays connecting and returns only `count: 0`, check HTTPS access from inside its container. A machine using antivirus/corporate HTTPS inspection may require its trusted root CA inside Docker too. Put a PEM bundle of the required public root certificates in ignored `.local/certs/extra-ca.pem`, run `node scripts/whatsapp-setup.mjs`, then recreate with `docker compose -f compose.evolution.yaml up -d --wait --wait-timeout 180`. Setup adds NODE_EXTRA_CA_CERTS only when this bundle exists, and Compose mounts it read-only. TLS verification stays enabled; do not use NODE_TLS_REJECT_UNAUTHORIZED=0. This is a local trust configuration, not an application credential, and must not be copied into a production environment with a different certificate chain.
 
 The local Docker callback is `http://host.docker.internal:4000/webhooks/evolution`. The connector sends the private `x-webhook-secret` header. This route bypasses browser Origin checks only because it verifies that header, selected provider and instance. Each message/receipt is persisted with its unique WhatsApp ID and a pg-boss job in one transaction, then follows the same debounce, advisory lock, state machine, staff notifications and outbound provider as Meta. Client text is not logged.
 

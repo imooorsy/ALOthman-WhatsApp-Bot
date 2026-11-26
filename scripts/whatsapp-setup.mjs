@@ -16,6 +16,8 @@ const secret = () => randomBytes(32).toString("hex");
 const key = env.EVOLUTION_API_KEY || secret();
 const hook = env.EVOLUTION_WEBHOOK_SECRET || secret();
 const localFile = path.join(root, ".local/evolution.env");
+const certDir = path.join(root, ".local/certs");
+fs.mkdirSync(certDir, { recursive: true });
 const old = fs.existsSync(localFile) ? parse(fs.readFileSync(localFile)) : {};
 const password = old.POSTGRES_PASSWORD || secret();
 const settings = {
@@ -37,6 +39,9 @@ for (const [name, value] of Object.entries(settings)) {
 fs.writeFileSync(apiFile, text, { mode: 0o600 });
 fs.mkdirSync(path.dirname(localFile), { recursive: true });
 const docker = {
+  ...(fs.existsSync(path.join(certDir, "extra-ca.pem"))
+    ? { NODE_EXTRA_CA_CERTS: "/evolution/local-certs/extra-ca.pem" }
+    : {}),
   SERVER_TYPE: "http",
   SERVER_PORT: 8080,
   SERVER_URL: "http://localhost:8080",

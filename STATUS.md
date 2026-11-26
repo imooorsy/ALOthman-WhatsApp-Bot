@@ -98,3 +98,9 @@
 - Added an initial read-only readiness wait and actionable, sanitized CLI errors. Mutations are never automatically retried. Added a container HTTP health check and documented Compose --wait.
 - Found that the pinned Evolution build returns 404 for a filtered lookup of an instance that does not yet exist. First-time linking now lists instances and selects locally instead; the authenticated unfiltered request returned HTTP 200.
 - Four readiness regression tests, script syntax validation, Compose config validation and workspace typecheck passed. No WhatsApp messages were sent.
+
+## QR generation and pairing recovered
+- Diagnosed the actual no-QR failure inside Docker: WhatsApp and GitHub HTTPS requests failed UNABLE_TO_VERIFY_LEAF_SIGNATURE while the host trusted its local HTTPS-inspection CA.
+- Mounted an ignored local certificate bundle read-only and configured NODE_EXTRA_CA_CERTS through the idempotent setup script. Verification remains enabled. Recreated the connector; container HTTPS checks for WhatsApp, GitHub and Google returned HTTP 200.
+- Ran the link script directly and generated .local/whatsapp-qr.png. Subsequently verified the instance state is open: the phone is paired, and the linking process removed the QR image on success.
+- Extended subsequent CLI scan windows to ten minutes with an explicit waiting message. Four readiness tests, workspace typecheck, script syntax and Compose validation pass. No test/client WhatsApp messages were sent by this recovery.

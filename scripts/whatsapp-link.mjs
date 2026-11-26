@@ -76,7 +76,10 @@ async function main() {
   await request("POST", `/webhook/set/${name}`, { webhook });
   const imageFile = new URL("../.local/whatsapp-qr.png", import.meta.url);
   let connected = false;
-  for (let attempt = 0; attempt < 24; attempt++) {
+  console.log(
+    "Waiting for a WhatsApp QR code and phone scan (up to 10 minutes)...",
+  );
+  for (let attempt = 0; attempt < 120; attempt++) {
     const state = await request("GET", `/instance/connectionState/${name}`);
     if ((state.instance?.state || state.state) === "open") {
       connected = true;
