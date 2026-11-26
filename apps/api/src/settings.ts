@@ -17,15 +17,21 @@ import { RealtimeGateway } from "./realtime";
 @Injectable()
 export class SettingsService {
   constructor(private db: Db) {}
-  async get(): Promise<OfficeConfig> {
-    const [row, services, categories] = await this.db.$transaction(
-      [
-        this.db.officeSettings.findUniqueOrThrow({ where: { id: 1 } }),
-        this.db.service.findMany({ orderBy: { sort: "asc" } }),
-        this.db.caseCategory.findMany({ orderBy: { sort: "asc" } }),
-      ],
-      { isolationLevel: "RepeatableRead" },
-    );
+  async get(tx?: Prisma.TransactionClient): Promise<OfficeConfig> {
+    const [row, services, categories] = tx
+      ? await Promise.all([
+          tx.officeSettings.findUniqueOrThrow({ where: { id: 1 } }),
+          tx.service.findMany({ orderBy: { sort: "asc" } }),
+          tx.caseCategory.findMany({ orderBy: { sort: "asc" } }),
+        ])
+      : await this.db.$transaction(
+          [
+            this.db.officeSettings.findUniqueOrThrow({ where: { id: 1 } }),
+            this.db.service.findMany({ orderBy: { sort: "asc" } }),
+            this.db.caseCategory.findMany({ orderBy: { sort: "asc" } }),
+          ],
+          { isolationLevel: "RepeatableRead" },
+        );
     return {
       ...settingsSchema.parse({
         ...(row.data as object),

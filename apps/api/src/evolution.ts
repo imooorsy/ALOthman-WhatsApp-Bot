@@ -38,7 +38,8 @@ export function evolutionEvents(body: unknown, instance: string) {
   const parsed = payloadSchema.safeParse(body);
   const messages: {
     id: string;
-    phone: string;
+    phone?: string;
+    address: string;
     text: string;
     type: "text" | "image" | "audio" | "document" | "other";
     at: string;
@@ -82,14 +83,16 @@ export function evolutionEvents(body: unknown, instance: string) {
     const checked = messageSchema.safeParse(item);
     if (!checked.success || checked.data.key.fromMe) continue;
     const m = checked.data;
-    // Never answer groups, broadcasts, status, or history sync. LID requires a real phone alias.
-    let jid = m.key.remoteJid;
-    if (jid.endsWith("@lid"))
+    // Private IDs are valid delivery addresses; never invent an E.164 phone from them.
+    const address = m.key.remoteJid;
+    let jid = address;
+    if (/^\d{5,24}@lid$/.test(jid))
       jid =
         [m.key.remoteJidAlt, m.key.senderPn, m.senderPn].find(
           (value) => value && /^[1-9]\d{7,14}@s\.whatsapp\.net$/.test(value),
         ) || "";
-    if (!/^[1-9]\d{7,14}@s\.whatsapp\.net$/.test(jid)) continue;
+    if (!/^(?:[1-9]\d{7,14}@s\.whatsapp\.net|\d{5,24}@lid)$/.test(address))
+      continue;
     const seconds = Number(
       typeof m.messageTimestamp === "object"
         ? m.messageTimestamp.low
@@ -142,7 +145,8 @@ export function evolutionEvents(body: unknown, instance: string) {
             : "other";
     messages.push({
       id: m.key.id,
-      phone: "+" + jid.split("@")[0],
+      ...(jid ? { phone: "+" + jid.split("@")[0] } : {}),
+      address,
       text: text.slice(0, 10000),
       type,
       at: new Date(seconds * 1000).toISOString(),

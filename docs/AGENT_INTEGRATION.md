@@ -41,6 +41,8 @@ Place the agent and its Dockerfile under `agent/`. Expose a private `POST /respo
 
 ## Validation and failures
 
+For Evolution private-ID-only senders, AgentRequest.clientPhone is null; conversationId remains the stable request identity. Do not assume a public phone is always available or infer it from an opaque ID. Agent state/history remain separate per conversation. AGENT_CONCURRENCY defaults to 10, allowing independent conversations to call the model concurrently while serializing messages within each chat.
+
 Run `pnpm test:agent-contract` with the desired mode configured in `apps/api/.env`. It runs sample requests against the selected adapter and checks the full shape without logging client text. No Meta credentials are needed. Default timeout is 20 seconds with one retry; invalid output, exceptions and timeouts route the chat to a human with an `agent_error` audit entry and notification. An in-process timeout cannot forcibly terminate third-party JavaScript; keep that code stateless and side-effect-free, or use HTTP for process isolation.
 
 `GET /internal/agent-config` accepts `x-agent-api-key: <AGENT_API_KEY>` and returns the same settings snapshot. Leave the key empty to disable access. Fixed knowledge updates apply to the next call; outgoing replies record Message.agentConfigVersion.

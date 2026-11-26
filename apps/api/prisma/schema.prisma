@@ -42,7 +42,8 @@ model StaffUser {
 }
 model Client {
  id String @id @default(cuid())
- phone String @unique
+ phone String? @unique
+ waAddress String? @unique
  name String?
  detectedCategory String?
  shortDescription String?

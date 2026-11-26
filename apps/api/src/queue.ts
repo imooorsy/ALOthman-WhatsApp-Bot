@@ -60,6 +60,18 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
       },
     );
   }
+  async deferInbox(id: string) {
+    return this.boss.send(
+      "whatsapp.inbox",
+      { id },
+      {
+        startAfter: new Date(Date.now() + 1000),
+        retryLimit: 20,
+        retryDelay: 5,
+        expireInSeconds: 120,
+      },
+    );
+  }
   async enqueue(id: string, tx?: Prisma.TransactionClient) {
     return this.boss.send(
       "conversation",

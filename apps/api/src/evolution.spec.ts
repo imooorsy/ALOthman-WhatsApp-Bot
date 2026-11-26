@@ -47,8 +47,18 @@ describe("Evolution connector", () => {
       ).messages,
     ).toHaveLength(1);
   });
-  it("rejects self messages, groups, unknown LIDs, foreign instances and history events", () => {
-    for (const jid of ["123@g.us", "12345@lid", "status@broadcast"])
+  it("keeps private-ID senders without fabricating a phone number", () => {
+    const result = evolutionEvents(
+      event(
+        message({ key: { id: "2", remoteJid: "12345@lid", fromMe: false } }),
+      ),
+      "osman",
+    );
+    expect(result.messages[0]).toMatchObject({ address: "12345@lid" });
+    expect(result.messages[0].phone).toBeUndefined();
+  });
+  it("rejects self messages, groups, foreign instances and history events", () => {
+    for (const jid of ["123@g.us", "status@broadcast"])
       expect(
         evolutionEvents(
           event(message({ key: { id: "2", remoteJid: jid, fromMe: false } })),
@@ -137,6 +147,13 @@ describe("Evolution connector", () => {
       text: "test",
       linkPreview: false,
     });
+    fetcher.mockResolvedValue(
+      new Response(JSON.stringify({ key: { id: "lid-out" } })),
+    );
+    await new WhatsAppProvider().send("12345@lid", "fixture");
+    expect(JSON.parse(fetcher.mock.calls[1][1]?.body as string).number).toBe(
+      "12345@lid",
+    );
     fetcher.mockResolvedValue(new Response("{}"));
     await expect(
       new WhatsAppProvider().send("+15555550100", "test"),

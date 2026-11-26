@@ -139,7 +139,7 @@ export type AgentResponse = z.infer<typeof agentResponseSchema>;
 export interface AgentRequest {
   state?: AgentResponse["state"];
   conversationId: string;
-  clientPhone: string;
+  clientPhone: string | null;
   history: {
     role: "client" | "assistant" | "staff";
     text: string;
@@ -171,7 +171,8 @@ export type Chat = {
   id: string;
   clientId: string;
   client: {
-    phone: string;
+    phone: string | null;
+    waAddress?: string | null;
     name: string | null;
     detectedCategory: string | null;
     shortDescription: string | null;

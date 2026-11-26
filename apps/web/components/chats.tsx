@@ -211,7 +211,14 @@ export function Chats({ selectedId }: { selectedId?: string }) {
                     onClick={() => router.push("/chats/" + c.id)}
                   >
                     <div>
-                      <b>{c.client.name || <bdi>{c.client.phone}</bdi>}</b>
+                      <b>
+                        {c.client.name || (
+                          <bdi>
+                            {c.client.phone ||
+                              `حساب واتساب ${c.client.waAddress?.split("@")[0].slice(-4) || ""}`}
+                          </bdi>
+                        )}
+                      </b>
                       <small>{relative(c.lastActivityAt)}</small>
                     </div>
                     <span className="s">
@@ -244,9 +251,19 @@ export function Chats({ selectedId }: { selectedId?: string }) {
               <>
                 <header className="ch">
                   <div>
-                    <b>{chat.client.name || <bdi>{chat.client.phone}</bdi>}</b>
+                    <b>
+                      {chat.client.name || (
+                        <bdi>
+                          {chat.client.phone ||
+                            `حساب واتساب ${chat.client.waAddress?.split("@")[0].slice(-4) || ""}`}
+                        </bdi>
+                      )}
+                    </b>
                     <div>
-                      <bdi className="ltr">{chat.client.phone}</bdi> ·{" "}
+                      <bdi className="ltr">
+                        {chat.client.phone || "الرقم غير متاح من واتساب"}
+                      </bdi>{" "}
+                      ·{" "}
                       <span className={"k " + colors[chat.status]}>
                         {statusLabels[chat.status]}
                       </span>

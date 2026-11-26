@@ -14,18 +14,33 @@ import { AuthGuard, Admin } from "./auth";
 import { SettingsService } from "./settings";
 import { AgentService } from "./agent";
 import { WhatsAppProvider } from "./whatsapp";
-import { lockConversation } from "./chats";
 import { QueueService } from "./queue";
 import { RealtimeGateway } from "./realtime";
 import { events } from "@osman/shared";
-export const inboundSchema = z.object({
-  id: z.string().min(1).max(200),
-  phone: phoneSchema,
-  text: z.string().max(10000),
-  type: z.enum(["text", "image", "audio", "document", "other"]).default("text"),
-  at: z.string().datetime().optional(),
-});
+export const inboundSchema = z
+  .object({
+    id: z.string().min(1).max(200),
+    phone: phoneSchema.optional(),
+    address: z
+      .string()
+      .regex(/^(?:[1-9]\d{7,14}@s\.whatsapp\.net|\d{5,24}@lid)$/)
+      .optional(),
+    text: z.string().max(10000),
+    type: z
+      .enum(["text", "image", "audio", "document", "other"])
+      .default("text"),
+    at: z.string().datetime().optional(),
+  })
+  .refine(
+    (value) => !!(value.phone || value.address),
+    "WhatsApp identity required",
+  );
 export type Inbound = z.infer<typeof inboundSchema>;
+export class ConversationBusyError extends Error {
+  constructor() {
+    super("Conversation is being processed; defer this inbox job");
+  }
+}
 @Injectable()
 export class InboundService {
   constructor(
@@ -39,16 +54,40 @@ export class InboundService {
   async receive(input: Inbound) {
     const config = await this.settings.get();
     const result = await this.db.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(${input.phone},0))`;
+      const identity = input.phone || input.address!;
+      await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(${identity},0))`;
       const duplicate = await tx.message.findUnique({
         where: { waMessageId: input.id },
       });
       if (duplicate) return { id: duplicate.conversationId, duplicate: true };
+      const address =
+        input.address || input.phone!.replace(/\D/g, "") + "@s.whatsapp.net";
       let client = await tx.client.findUnique({
-        where: { phone: input.phone },
+        where: { waAddress: address },
       });
+      if (!client && input.phone)
+        client = await tx.client.findUnique({ where: { phone: input.phone } });
       if (!client)
-        client = await tx.client.create({ data: { phone: input.phone } });
+        client = await tx.client.create({
+          data: { phone: input.phone, waAddress: address },
+        });
+      else if (
+        !client.waAddress ||
+        (address.endsWith("@lid") && client.waAddress !== address)
+      )
+        client = await tx.client.update({
+          where: { id: client.id },
+          data: { waAddress: address },
+        });
+      if (
+        !client.phone &&
+        input.phone &&
+        !(await tx.client.findUnique({ where: { phone: input.phone } }))
+      )
+        client = await tx.client.update({
+          where: { id: client.id },
+          data: { phone: input.phone },
+        });
       // Keep terminal conversations addressable: default not_suitable policy is silent storage.
       let chat = await tx.conversation.findFirst({
         where: { clientId: client.id },
@@ -61,7 +100,10 @@ export class InboundService {
             lastClientMessageAt: input.at ? new Date(input.at) : new Date(),
           },
         });
-      await lockConversation(tx, chat.id);
+      const lock = await tx.$queryRaw<
+        { acquired: boolean }[]
+      >`SELECT pg_try_advisory_xact_lock(hashtextextended(${chat.id},0)) AS acquired`;
+      if (lock[0]?.acquired === false) throw new ConversationBusyError();
       chat = await tx.conversation.findUniqueOrThrow({
         where: { id: chat.id },
       });
@@ -151,7 +193,13 @@ export class InboundService {
   async process(id: string) {
     const notice = await this.db.$transaction(
       async (tx) => {
-        await lockConversation(tx, id);
+        const locks = await tx.$queryRaw<
+          { acquired: boolean }[]
+        >`SELECT pg_try_advisory_xact_lock(hashtextextended(${id},0)) AS acquired`;
+        if (locks[0]?.acquired === false) {
+          await this.queue.enqueue(id, tx);
+          return;
+        }
         const c = await tx.conversation.findUniqueOrThrow({
           where: { id },
           include: {
@@ -163,7 +211,7 @@ export class InboundService {
           (m) => m.direction === "client" && !m.processedAt,
         );
         if (!pending.length) return;
-        const config = await this.settings.get();
+        const config = await this.settings.get(tx);
         const markProcessed = () =>
           tx.message.updateMany({
             where: { id: { in: pending.map((m) => m.id) } },
@@ -224,11 +272,14 @@ export class InboundService {
             config,
           });
           // Do not deliver a reply if an admin disabled the model while it ran.
-          if ((await this.settings.get()).rules.paused)
+          if ((await this.settings.get(tx)).rules.paused)
             return handoffDisabledAgent();
           const status = ConversationMachine.agentAction(response.action);
           if (response.reply) {
-            const sent = await this.wa.send(c.client.phone, response.reply);
+            const sent = await this.wa.send(
+              c.client.waAddress || c.client.phone!,
+              response.reply,
+            );
             await tx.message.create({
               data: {
                 conversationId: id,
@@ -315,7 +366,7 @@ export class InboundService {
         });
         return notificationId;
       },
-      { timeout: 60000 },
+      { timeout: 60000, maxWait: 30000 },
     );
     this.realtime.changed(id);
     if (notice) await this.realtime.notify(id, notice, events.handoff);

@@ -26,7 +26,9 @@ export class WhatsAppProvider implements IWhatsAppProvider {
             apikey: process.env.EVOLUTION_API_KEY,
           },
           body: JSON.stringify({
-            number: phone.replace(/\D/g, ""),
+            number: /^\d{5,24}@lid$/.test(phone)
+              ? phone
+              : phone.replace(/\D/g, ""),
             text,
             linkPreview: false,
           }),
@@ -39,6 +41,8 @@ export class WhatsAppProvider implements IWhatsAppProvider {
     }
     if (process.env.WA_PROVIDER !== "meta")
       throw new Error("Unsupported WhatsApp provider");
+    if (!/^\+?[1-9]\d{7,14}(?:@s\.whatsapp\.net)?$/.test(phone))
+      throw new Error("Meta requires a phone number");
     const response = await fetch(
       `https://graph.facebook.com/${process.env.WA_API_VERSION}/${process.env.WA_PHONE_NUMBER_ID}/messages`,
       {

@@ -112,6 +112,10 @@ export class ChatsService {
       let link: string | undefined;
       if (body.action === "secretary")
         try {
+          if (!c.client.phone)
+            throw new Error(
+              "رقم العميل غير متاح من واتساب؛ اطلب رقم الهاتف من العميل قبل التحويل إلى السكرتيرة",
+            );
           link = secretaryLink(settings.contacts.secretary, {
             name: c.client.name,
             phone: c.client.phone,
@@ -168,7 +172,10 @@ export class ChatsService {
           data: { conversationId: id, direction: "staff", text: body.text },
         });
         try {
-          const sent = await this.wa.send(c.client.phone, body.text);
+          const sent = await this.wa.send(
+            c.client.waAddress || c.client.phone!,
+            body.text,
+          );
           await tx.message.update({
             where: { id: m.id },
             data: { waMessageId: sent.id, deliveryStatus: "sent" },
