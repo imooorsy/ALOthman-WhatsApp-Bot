@@ -14,7 +14,7 @@ node scripts/whatsapp-link.mjs
 
 The linking script waits for Evolution to finish starting before its first authenticated read. A Docker container marked Started may still be running migrations; the compose health check reports readiness separately. To wait explicitly, use `docker compose -f compose.evolution.yaml up -d --wait --wait-timeout 180`. If a later connection drops, rerun the link command; mutations are not automatically replayed.
 
-Setup is idempotent and has already been run locally. It generates random private keys in ignored `.local/evolution.env` and `apps/api/.env`. It keeps existing model/WhatsApp modes. The compose file pins the same Evolution v2.3.7 release as the engineer's trial setup, binds port 8080 to localhost, and persists the linked session and an independent connector PostgreSQL database. Docker pulls the images on first run. Wait for the connector to become available before running the link script. `docker compose -f compose.evolution.yaml ps` shows its state.
+Setup is idempotent and has already been run locally. It generates random private keys in ignored `.local/evolution.env` and `apps/api/.env`. It keeps existing model/WhatsApp modes. The compose file pins Evolution v2.3.8, which fixes sessions that remain open but stop receiving messages, binds port 8080 to localhost, and persists the linked session and an independent connector PostgreSQL database. Docker pulls the images on first run. Wait for the connector to become available before running the link script. `docker compose -f compose.evolution.yaml ps` shows its state.
 
 The link script creates the `osman` instance, subscribes to MESSAGES_UPSERT and MESSAGES_UPDATE, installs an authenticated webhook and refreshes `.local/whatsapp-qr.png` for up to ten minutes. Open that image from Explorer while the script runs. On the phone containing the number to connect, choose **WhatsApp → Linked devices → Link a device**, then scan the image. The script reports connected and removes the QR image; if it times out, rerun for a fresh code. It does not print API secrets/pairing codes or send messages. Treat the QR as a login credential and do not share it.
 
@@ -53,7 +53,14 @@ A database-backed test holds ten simulated agent requests at a barrier until all
 
 To stop the connector without deleting its session: `docker compose -f compose.evolution.yaml stop`. To stop real sends in the dashboard: set WA_PROVIDER=mock and restart the API, and/or disable the agent in Settings. Do not delete connector volumes as a routine restart.
 
+## Connected session but no new messages
+
+The WhatsApp `open` state and an HTTP-healthy container do not prove that new messages are arriving. Evolution 2.3.8 fixes a Baileys status-acknowledgment problem that can hold incoming messages while the session still appears open. This project pins that release. Before updating a previously paired connector, preserve its PostgreSQL backup and instances volume; keep the local CA mount and webhook authentication intact. Do not log webhook/message bodies during diagnostics. Verify a new plain text message reaches the connector, dashboard inbox and agent response separately. A heart reaction is ignored and an emoji-only message may intentionally receive no reply under the intake policy.
+
+Automatic blue read receipts are disabled in the connector settings. Check the dashboard for receipt instead of using blue ticks as the bot health indicator. In a human/urgent/waiting_schedule chat the bot remains silent by design; use إعادة إلى عثمان when staff intentionally returns that chat to the agent.
+
 ## Sources
 
 - [Evolution instance creation/QR implementation](https://github.com/evolution-foundation/evolution-api/blob/main/src/api/controllers/instance.controller.ts)
 - [Evolution v2.3.7 release and reconnect/private-ID changes](https://github.com/evolution-foundation/evolution-api/releases/tag/2.3.7)
+- [Evolution v2.3.8: open sessions that stop receiving messages](https://github.com/evolution-foundation/evolution-api/releases/tag/2.3.8)

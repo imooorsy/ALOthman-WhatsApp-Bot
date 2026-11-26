@@ -1,7 +1,7 @@
 name: osman-whatsapp
 services:
   evolution:
-    image: evoapicloud/evolution-api:v2.3.7
+    image: evoapicloud/evolution-api:v2.3.8
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080"
