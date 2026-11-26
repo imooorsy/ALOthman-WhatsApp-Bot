@@ -1,0 +1,30 @@
+# The reception server as a service that starts with the machine and restarts after a failure.
+# Install: sudo cp deploy/elmaster.service /etc/systemd/system/ && sudo systemctl enable --now elmaster
+[Unit]
+Description=Al Othman WhatsApp reception assistant
+After=network-online.target time-sync.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=elmaster
+Group=elmaster
+WorkingDirectory=/opt/elmaster
+# The settings, keys included, are read from /opt/elmaster/.env.local (owner elmaster, mode 600).
+ExecStart=/usr/bin/node server/start.js
+Restart=always
+RestartSec=5
+# A stop lets the server write what it kept in memory and finish its current write.
+KillSignal=SIGTERM
+TimeoutStopSec=15
+# Hardening: the server writes only its data folder. It reads the backups folder (BACKUP_DIR,
+# for the age of the last backup in /health); keep that folder outside /home, which it cannot see.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/elmaster/.local
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

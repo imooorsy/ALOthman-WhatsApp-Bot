@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+.local/
+*.log
+ai/tests/results/live-runs/
+backups/
+.local.before-restore-*/
+# The trial's Evolution settings: a key and a password (scripts/trial-setup.js).
+deploy/trial/evolution.env

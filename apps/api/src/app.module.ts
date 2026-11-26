@@ -16,6 +16,7 @@ import { ChatsController, ChatsService } from "./chats";
 import { InboundService, DevController } from "./inbound";
 import { AgentService } from "./agent";
 import { WhatsAppProvider } from "./whatsapp";
+import { EvolutionWebhookController } from "./evolution";
 import { Controller, Get } from "@nestjs/common";
 @Controller("health")
 class HealthController {
@@ -59,6 +60,7 @@ class HealthController {
     ChatsController,
     DevController,
     WebhookController,
+    EvolutionWebhookController,
     InternalController,
     NotificationsController,
     PushController,

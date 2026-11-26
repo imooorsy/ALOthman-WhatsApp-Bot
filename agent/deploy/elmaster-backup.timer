@@ -1,0 +1,11 @@
+# A backup every night at 02:30 (the machine's time zone), and at the next start if one was missed.
+# Install: sudo cp deploy/elmaster-backup.* /etc/systemd/system/ && sudo systemctl enable --now elmaster-backup.timer
+[Unit]
+Description=Nightly backup of the reception assistant's data
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

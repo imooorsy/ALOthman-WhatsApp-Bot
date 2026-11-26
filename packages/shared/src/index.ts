@@ -126,10 +126,18 @@ export const agentResponseSchema = z
     clientName: z.string().max(200).nullable(),
     summary: z.string().max(10000).nullable(),
     urgentReason: z.string().max(1000).nullable(),
+    state: z
+      .record(z.string(), z.json())
+      .refine(
+        (value) => JSON.stringify(value).length <= 100000,
+        "Agent state too large",
+      )
+      .optional(),
   })
   .strict();
 export type AgentResponse = z.infer<typeof agentResponseSchema>;
 export interface AgentRequest {
+  state?: AgentResponse["state"];
   conversationId: string;
   clientPhone: string;
   history: {

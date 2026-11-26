@@ -1,0 +1,26 @@
+# One backup of the data folder (scripts/backup.js), run by elmaster-backup.timer.
+# A failed backup (or one that hangs past TimeoutStartSec) runs elmaster-backup-failed.service,
+# which sends a backup_failed alert to ALERT_WEBHOOK_URL.
+#
+# The backup writes only into its backup folder. With BACKUP_DIR elsewhere than
+# /opt/elmaster/backups, allow that folder too (deploy/README.md, step 8):
+#   sudo systemctl edit elmaster-backup     and add:
+#   [Service]
+#   ReadWritePaths=/srv/elmaster-backups
+[Unit]
+Description=Backup of the reception assistant's data
+OnFailure=elmaster-backup-failed.service
+
+[Service]
+Type=oneshot
+User=elmaster
+Group=elmaster
+WorkingDirectory=/opt/elmaster
+ExecStart=/usr/bin/node scripts/backup.js backup --keep 30
+TimeoutStartSec=3h
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/elmaster/backups
+ReadOnlyPaths=/opt/elmaster/.local
+UMask=0077

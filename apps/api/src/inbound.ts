@@ -207,6 +207,8 @@ export class InboundService {
         let notificationId: string | undefined;
         try {
           const response = await this.agent.respond({
+            state: (c.agentState ||
+              undefined) as import("@osman/shared").AgentRequest["state"],
             conversationId: id,
             clientPhone: c.client.phone,
             history: c.messages
@@ -244,6 +246,12 @@ export class InboundService {
               status,
               category: response.category || c.category,
               summary: response.summary || c.summary,
+              ...(response.state
+                ? {
+                    agentState:
+                      response.state as import("@prisma/client").Prisma.InputJsonObject,
+                  }
+                : {}),
               urgentReason: response.urgentReason,
               version: { increment: 1 },
               lastActivityAt: new Date(),

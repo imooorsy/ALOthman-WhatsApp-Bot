@@ -49,7 +49,7 @@ async function main() {
         return res.status(403).json({ message: "يلزم اتصال آمن" });
       if (
         ["POST", "PUT", "PATCH", "DELETE"].includes(req.method) &&
-        !/^\/webhooks\/whatsapp\/?$/.test(req.path) &&
+        !/^\/webhooks\/(whatsapp|evolution)\/?$/.test(req.path) &&
         !origins.includes(req.get("origin") || "")
       )
         return res.status(403).json({ message: "مصدر الطلب غير مسموح" });

@@ -1,0 +1,17 @@
+# Sends a backup_failed alert (no client data) to ALERT_WEBHOOK_URL when elmaster-backup.service
+# fails: systemd runs it by that unit's OnFailure=. Install it with the backup units:
+#   sudo cp deploy/elmaster-backup*.service deploy/elmaster-backup.timer /etc/systemd/system/
+[Unit]
+Description=Alert: the reception assistant's backup failed
+
+[Service]
+Type=oneshot
+User=elmaster
+Group=elmaster
+WorkingDirectory=/opt/elmaster
+ExecStart=/usr/bin/node scripts/backup.js notify-failure
+TimeoutStartSec=60
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0077

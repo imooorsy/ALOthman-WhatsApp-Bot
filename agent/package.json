@@ -1,0 +1,27 @@
+{
+  "name": "legal-whatsapp-agent-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference implementation of the AI part of the legal WhatsApp reception agent. No external dependencies.",
+  "scripts": {
+    "test": "node --test \"ai/tests/*.test.js\" \"server/tests/*.test.js\"",
+    "setup": "node server/setup.js",
+    "start": "node server/start.js",
+    "test:server": "node --test \"server/tests/*.test.js\"",
+    "eval:live": "node scripts/live-eval.js",
+    "check:evolution": "node scripts/evolution-check.js",
+    "validate:replies": "node ai/src/validate-replies.js",
+    "replies:doc": "node ai/tests/make-replies-doc.js",
+    "grade": "node ai/tests/grade.js",
+    "report:models": "node ai/tests/report-model-eval.js",
+    "samples": "node ai/tests/make-transcripts.js",
+    "review:pack": "node ai/tests/make-reader-pack.js",
+    "eval:pack": "node ai/tests/make-eval-pack.js",
+    "grade:scenarios": "node ai/tests/grade-scenarios.js",
+    "backup": "node scripts/backup.js backup",
+    "restore": "node scripts/backup.js restore"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

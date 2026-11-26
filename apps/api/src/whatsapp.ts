@@ -8,6 +8,35 @@ export class WhatsAppProvider implements IWhatsAppProvider {
   async send(phone: string, text: string) {
     if ((process.env.WA_PROVIDER || "mock") === "mock")
       return { id: "mock-" + randomUUID() };
+    if (process.env.WA_PROVIDER === "evolution") {
+      if (
+        !process.env.EVOLUTION_URL ||
+        !process.env.EVOLUTION_INSTANCE ||
+        !process.env.EVOLUTION_API_KEY
+      )
+        throw new Error("Evolution is not configured");
+      const response = await fetch(
+        `${process.env.EVOLUTION_URL.replace(/\/$/, "")}/message/sendText/${encodeURIComponent(process.env.EVOLUTION_INSTANCE)}`,
+        {
+          method: "POST",
+          redirect: "error",
+          signal: AbortSignal.timeout(10000),
+          headers: {
+            "Content-Type": "application/json",
+            apikey: process.env.EVOLUTION_API_KEY,
+          },
+          body: JSON.stringify({
+            number: phone.replace(/\D/g, ""),
+            text,
+            linkPreview: false,
+          }),
+        },
+      );
+      if (!response.ok) throw new Error("Evolution delivery failed");
+      const result = (await response.json()) as { key?: { id?: string } };
+      if (!result.key?.id) throw new Error("Invalid Evolution response");
+      return { id: result.key.id };
+    }
     if (process.env.WA_PROVIDER !== "meta")
       throw new Error("Unsupported WhatsApp provider");
     const response = await fetch(

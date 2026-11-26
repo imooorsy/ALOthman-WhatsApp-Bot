@@ -11,6 +11,8 @@ import { Db } from "./db";
 import { QueueService } from "./queue";
 import { RealtimeGateway } from "./realtime";
 import { WhatsAppProvider } from "./whatsapp";
+import { resolve } from "node:path";
+import type { AgentPort } from "@osman/shared";
 const describeDatabase = process.env.TEST_DATABASE_URL
   ? describe
   : describe.skip;
@@ -224,6 +226,135 @@ describeDatabase("webhook → PostgreSQL queue → agent → state → socket", 
         },
       },
     });
+  });
+  it("persists the delivered agent memory and restores it on the next turn", async () => {
+    const client = await db.client.create({
+      data: { phone: "+1777" + phone.slice(-7) },
+    });
+    const c = await db.conversation.create({
+      data: {
+        clientId: client.id,
+        lastActivityAt: new Date(Date.now() - 60000),
+        messages: { create: { direction: "client", text: "السلام عليكم" } },
+      },
+    });
+    const { createAgent } = require(
+      resolve(__dirname, "../../../agent/dashboard-adapter.cjs"),
+    ) as {
+      createAgent(options: {
+        env: NodeJS.ProcessEnv;
+        fetcher: typeof fetch;
+      }): AgentPort;
+    };
+    const answer = {
+      service: "",
+      requested: "غير محدد",
+      client_name: "",
+      memory: [
+        { field: "المدينة", required: false, status: "معروف", value: "الرياض" },
+      ],
+      threshold: "غير معروف",
+      required_documents: [],
+      risk_flags: [],
+      status: "قيد الفرز",
+      priority: "عادي",
+      action: "ask",
+      next_question: "كيف يمكنني مساعدتك؟",
+      asking_about: [],
+      reply_used: "R1",
+      language: "ar",
+      reply: "وعليكم السلام، معك عثمان. كيف يمكنني مساعدتك؟",
+      internal_summary: "",
+    };
+    (answer.asking_about as string[]).push("نوع الخدمة");
+    const fetcher = jest
+      .fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
+      .mockImplementation(
+        async () =>
+          new Response(
+            JSON.stringify({
+              choices: [
+                {
+                  finish_reason: "stop",
+                  message: { content: JSON.stringify(answer) },
+                },
+              ],
+            }),
+          ),
+      );
+    const agent = createAgent({
+      env: {
+        MODEL_PROVIDER: "openrouter",
+        OPENROUTER_API_KEY: "fixture",
+        OPENROUTER_MODEL: "fixture",
+      },
+      fetcher,
+    });
+    const respond = jest.spyOn(agent, "respond");
+    const realtime = {
+      changed: jest.fn(),
+      notify: jest.fn(),
+    } as unknown as RealtimeGateway;
+    const wa = {
+      send: jest.fn().mockResolvedValue({ id: "fixture-" + c.id }),
+    } as unknown as WhatsAppProvider;
+    const service = new InboundService(
+      db as Db,
+      new SettingsService(db as Db),
+      agent as AgentService,
+      wa,
+      {} as QueueService,
+      realtime,
+    );
+    try {
+      await service.process(c.id);
+      expect(respond).toHaveBeenCalledTimes(1);
+      await expect(respond.mock.results[0].value).resolves.toHaveProperty(
+        "state",
+      );
+      const saved = await db.conversation.findUniqueOrThrow({
+        where: { id: c.id },
+      });
+      expect(saved.agentState).toMatchObject({
+        adapter: "alothman-v1",
+        memory: { المدينه: { value: "الرياض" } },
+      });
+      const reply = await db.message.findFirstOrThrow({
+        where: { conversationId: c.id, direction: "agent" },
+      });
+      expect(reply.agentConfigVersion).toBeGreaterThan(0);
+      await db.message.create({
+        data: {
+          conversationId: c.id,
+          direction: "client",
+          text: "أحتاج مساعدة",
+        },
+      });
+      await db.conversation.update({
+        where: { id: c.id },
+        data: { lastActivityAt: new Date(Date.now() - 60000) },
+      });
+      answer.action = "silent";
+      answer.reply = "";
+      await service.process(c.id);
+      const input = JSON.parse(
+        JSON.parse(fetcher.mock.calls[1][1]?.body as string).messages[1]
+          .content,
+      );
+      expect(input.memory).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "المدينة", value: "الرياض" }),
+        ]),
+      );
+      expect(
+        (await db.conversation.findUniqueOrThrow({ where: { id: c.id } }))
+          .status,
+      ).toBe("human");
+      expect(realtime.notify).toHaveBeenCalled();
+    } finally {
+      await db.conversation.delete({ where: { id: c.id } });
+      await db.client.delete({ where: { id: client.id } });
+    }
   });
   it("persists a human fallback, audit entry and notification on agent failure", async () => {
     const client = await db.client.create({

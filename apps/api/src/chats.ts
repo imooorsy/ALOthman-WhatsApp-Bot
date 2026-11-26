@@ -55,7 +55,11 @@ export class ChatsService {
   ) {}
   list() {
     return this.db.conversation
-      .findMany({ include: chatInclude, orderBy: { lastActivityAt: "desc" } })
+      .findMany({
+        omit: { agentState: true },
+        include: chatInclude,
+        orderBy: { lastActivityAt: "desc" },
+      })
       .then((rows) =>
         rows.sort(
           (a, b) =>
@@ -66,6 +70,7 @@ export class ChatsService {
   async get(id: string) {
     const chat = await this.db.conversation.findUnique({
       where: { id },
+      omit: { agentState: true },
       include: { ...chatInclude, messages: { orderBy: { createdAt: "asc" } } },
     });
     if (!chat) throw new NotFoundException("المحادثة غير موجودة");

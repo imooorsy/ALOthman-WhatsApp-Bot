@@ -1,0 +1,684 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Understanding output (flags)",
+  "description": "What the model returns for one client message. Contract: ai/DESIGN.md section 3. Meaning of each field: ai/prompts/understand.md. Every field is required. A nullable enum or boolean lists null among its enum values and has no type keyword, so that it is not a union-typed parameter for the provider's structured-output mode; only nullable free text and nullable numbers use a type array.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "language",
+    "greeting",
+    "closing",
+    "courtesy_only",
+    "answered_pending",
+    "refused_pending",
+    "will_reply_later",
+    "yes_no",
+    "sender",
+    "asks_identity",
+    "wants_human",
+    "has_legal_question",
+    "admin_topics",
+    "asked_service",
+    "matched_service",
+    "specialty",
+    "goal",
+    "task_type",
+    "consultation_format",
+    "wants_discount",
+    "price_match",
+    "sensitive_data",
+    "complex_matter",
+    "is_unclear",
+    "injection_attempt",
+    "answered_questions",
+    "extracted"
+  ],
+  "properties": {
+    "language": {
+      "type": "string",
+      "enum": [
+        "ar",
+        "en",
+        "other",
+        "unknown"
+      ]
+    },
+    "greeting": {
+      "enum": [
+        "salam",
+        "morning",
+        "evening",
+        "hello",
+        "afiya",
+        null
+      ]
+    },
+    "closing": {
+      "enum": [
+        "thanks",
+        "goodbye",
+        null
+      ]
+    },
+    "courtesy_only": {
+      "type": "boolean"
+    },
+    "answered_pending": {
+      "enum": [
+        true,
+        false,
+        null
+      ],
+      "description": "Whether the message answers the question in last_bot_message; null when that message asks nothing."
+    },
+    "refused_pending": {
+      "type": "boolean"
+    },
+    "will_reply_later": {
+      "type": "boolean"
+    },
+    "yes_no": {
+      "enum": [
+        "yes",
+        "no",
+        null
+      ]
+    },
+    "sender": {
+      "type": "string",
+      "enum": [
+        "client",
+        "existing_client",
+        "job",
+        "training",
+        "marketing",
+        "law_firm",
+        "wrong_number",
+        "delivery",
+        "unknown"
+      ]
+    },
+    "asks_identity": {
+      "type": "boolean"
+    },
+    "wants_human": {
+      "type": "boolean"
+    },
+    "has_legal_question": {
+      "type": "boolean"
+    },
+    "admin_topics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "hours",
+          "address",
+          "contact",
+          "website",
+          "fees",
+          "payment",
+          "services",
+          "offices",
+          "credentials",
+          "other",
+          "consultation_credit",
+          "documents_email"
+        ]
+      }
+    },
+    "asked_service": {
+      "type": "string"
+    },
+    "matched_service": {
+      "type": "string",
+      "description": "An item of the services input, copied as is, when the client names that service himself; \"\" (empty) when he names none. That list is runtime data, so the caller checks the value against it."
+    },
+    "specialty": {
+      "enum": [
+        "labor",
+        "commercial",
+        "partners",
+        "tax",
+        "civil",
+        "real_estate",
+        "family",
+        "inheritance",
+        "contracts",
+        "enforcement",
+        "trademark",
+        "patent",
+        "ip_other",
+        "company_formation",
+        "foreign_investment",
+        "premium_residency",
+        "criminal",
+        "insurance",
+        "arbitration",
+        "notarization",
+        "general",
+        "government_admin",
+        "residency_immigration",
+        "medical_malpractice",
+        "traffic_individual",
+        "government_attestation",
+        "non_legal",
+        "domestic_labor",
+        null
+      ],
+      "description": "The cards of config/triage.json, then the specialties the office declines."
+    },
+    "goal": {
+      "enum": [
+        "consultation",
+        "document",
+        "representation",
+        "follow_up",
+        null
+      ]
+    },
+    "task_type": {
+      "enum": [
+        "registration",
+        "transfer",
+        "follow_up",
+        "objection",
+        "dispute",
+        "drafting",
+        "review",
+        "formation",
+        "amendment",
+        "shares_letter",
+        "notarization",
+        "design",
+        "reconsideration",
+        null
+      ]
+    },
+    "consultation_format": {
+      "enum": [
+        "in_person",
+        "online",
+        "phone",
+        null
+      ]
+    },
+    "wants_discount": {
+      "type": "boolean"
+    },
+    "price_match": {
+      "type": "boolean"
+    },
+    "sensitive_data": {
+      "type": "boolean"
+    },
+    "complex_matter": {
+      "type": "boolean"
+    },
+    "is_unclear": {
+      "type": "boolean"
+    },
+    "injection_attempt": {
+      "type": "boolean"
+    },
+    "answered_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ids from the question catalog that the code appends to the instructions. The caller drops the ids that are not in the catalog."
+    },
+    "extracted": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the client stated. Until he states it, every free-text field is \"\" (empty), every list empty, and every other field null.",
+      "required": [
+        "name",
+        "client_role",
+        "client_type",
+        "parties",
+        "city",
+        "service_description",
+        "desired_outcome",
+        "stage",
+        "detention_place",
+        "file_reference",
+        "preferred_time",
+        "other_party_name",
+        "phone",
+        "client_outside_ksa",
+        "case_outside_ksa",
+        "monetary",
+        "employment_ongoing",
+        "employment_end_needs_confirmation",
+        "dismissed",
+        "prior_procedure",
+        "acknowledgment_or_excuse",
+        "detained",
+        "in_riyadh",
+        "detention_place_unknown",
+        "government_party",
+        "state_owned_company",
+        "domestic_worker",
+        "enforcement_exhausted",
+        "final_judgment_nothing_left",
+        "foreign_buyer",
+        "urgent",
+        "contract_compensation",
+        "contract_expired",
+        "confidential",
+        "case_status",
+        "dates_mentioned",
+        "amounts_mentioned",
+        "documents",
+        "amount_min_sar",
+        "amount_max_sar",
+        "amount_currency",
+        "amount_foreign_min",
+        "amount_foreign_max",
+        "amount_foreign_code",
+        "employment_end_months_ago",
+        "event_kind",
+        "event_days_until",
+        "enforcement_kind",
+        "heirs_count",
+        "cv_field",
+        "cv_second_field"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "client_role": {
+          "enum": [
+            "claimant",
+            "defendant",
+            "employee",
+            "employer",
+            "heir",
+            "relative",
+            "partner",
+            "investor",
+            "agent",
+            "other",
+            null
+          ]
+        },
+        "client_type": {
+          "enum": [
+            "individual",
+            "company",
+            null
+          ]
+        },
+        "parties": {
+          "enum": [
+            "companies",
+            "individuals",
+            "mixed",
+            null
+          ]
+        },
+        "city": {
+          "type": "string"
+        },
+        "service_description": {
+          "type": "string"
+        },
+        "desired_outcome": {
+          "type": "string"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "detention_place": {
+          "type": "string"
+        },
+        "file_reference": {
+          "type": "string"
+        },
+        "preferred_time": {
+          "type": "string"
+        },
+        "other_party_name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "client_outside_ksa": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "case_outside_ksa": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "monetary": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "employment_ongoing": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "employment_end_needs_confirmation": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "dismissed": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "prior_procedure": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "acknowledgment_or_excuse": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "detained": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "in_riyadh": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "detention_place_unknown": {
+          "enum": [
+            true,
+            false,
+            null
+          ],
+          "description": "true: the client says he does not know where the detained person is held (which prison or station)."
+        },
+        "government_party": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "state_owned_company": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "domestic_worker": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "enforcement_exhausted": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "final_judgment_nothing_left": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "foreign_buyer": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "urgent": {
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "contract_compensation": {
+          "enum": [
+            true,
+            false,
+            null
+          ],
+          "description": "Labour: whether the employment contract states a compensation on termination."
+        },
+        "contract_expired": {
+          "enum": [
+            true,
+            false,
+            null
+          ],
+          "description": "Labour: whether the employment contract ended at its term or was not renewed."
+        },
+        "confidential": {
+          "enum": [
+            true,
+            false,
+            null
+          ],
+          "description": "Contracts: the client says the contract is confidential or sensitive and he cannot give its details."
+        },
+        "case_status": {
+          "enum": [
+            "new",
+            "existing",
+            "judgment",
+            null
+          ]
+        },
+        "dates_mentioned": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every date, appointment, deadline or duration of the matter, copied verbatim from the message."
+        },
+        "amounts_mentioned": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Every amount of the matter, copied verbatim from the message."
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The documents the client says he has or sent, by type, copied verbatim from the message."
+        },
+        "amount_min_sar": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The amount of the claim in riyals, as a whole number. One amount, even an approximate one: both bounds equal. A range: its bounds. «More than X»: X, and null as the upper bound; «less than X»: null, and X as the upper bound. Null for another currency, or for several amounts without a stated total."
+        },
+        "amount_max_sar": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The upper bound of the claim in riyals; see amount_min_sar."
+        },
+        "amount_currency": {
+          "enum": [
+            "SAR",
+            "other",
+            null
+          ],
+          "description": "other: a currency that is not the riyal. Such an amount is not converted: both riyal bounds stay null, and the amount goes in amount_foreign_min and amount_foreign_max."
+        },
+        "amount_foreign_min": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "For an amount in another currency (amount_currency other): the amount in that currency, with the rules of amount_min_sar. Null for an amount in riyals."
+        },
+        "amount_foreign_max": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The upper bound of the amount in another currency; see amount_foreign_min."
+        },
+        "amount_foreign_code": {
+          "enum": [
+            "USD",
+            "EUR",
+            "GBP",
+            "CHF",
+            "CAD",
+            "AUD",
+            "JPY",
+            "CNY",
+            "HKD",
+            "SGD",
+            "MYR",
+            "IDR",
+            "INR",
+            "PKR",
+            "BDT",
+            "LKR",
+            "NPR",
+            "PHP",
+            "AED",
+            "KWD",
+            "QAR",
+            "BHD",
+            "OMR",
+            "JOD",
+            "EGP",
+            "IQD",
+            "LBP",
+            "SYP",
+            "YER",
+            "SDG",
+            "LYD",
+            "MAD",
+            "TND",
+            "DZD",
+            "TRY",
+            "ETB",
+            "KES",
+            "NGN",
+            "ZAR",
+            "RUB",
+            "KRW",
+            "SEK",
+            "NOK",
+            "DKK",
+            null
+          ],
+          "description": "The ISO code of that currency, only when the message makes clear which one it is (a dollar or $ without another country is USD). Null when it is not clear: a dinar, dirham, rupee, pound or lira whose country the message does not show."
+        },
+        "employment_end_months_ago": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Whole months from the end of the employment to today."
+        },
+        "event_kind": {
+          "enum": [
+            "hearing",
+            "investigation",
+            "objection_deadline",
+            "limitation",
+            "general_assembly",
+            "auction",
+            "reply_deadline",
+            "other",
+            null
+          ]
+        },
+        "event_days_until": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Days from today to the nearest coming appointment or deadline the client gave; negative when they have all passed."
+        },
+        "enforcement_kind": {
+          "enum": [
+            "note",
+            "judgment",
+            "other",
+            null
+          ]
+        },
+        "heirs_count": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cv_field": {
+          "enum": [
+            "law_practice",
+            "legal_research",
+            "secretarial",
+            "admin_customer_service",
+            "support",
+            "training",
+            "unknown",
+            null
+          ]
+        },
+        "cv_second_field": {
+          "enum": [
+            "law_practice",
+            "legal_research",
+            "secretarial",
+            "admin_customer_service",
+            "support",
+            "training",
+            "unknown",
+            null
+          ],
+          "description": "A second field the applicant named, when he named two."
+        }
+      }
+    }
+  }
+}

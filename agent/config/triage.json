@@ -1,0 +1,420 @@
+{
+  "version": 1,
+  "status": "draft",
+  "source": "office-knowledge-base.md (received 2026-11-12): sections 1.7, 1.11, 2, 2.1, 3, 4, 5, 6 and 9.A",
+  "note": "Office data. Prices, thresholds and exclusions are the office's approved decisions. The question lists turn the cards of section 5 into the order the assistant asks them. Reply texts are in approved-replies.json under the same ids.",
+  "limits": {
+    "urgent_days": 3,
+    "max_questions": 7,
+    "max_followup_messages": 3,
+    "questions_per_message": 2,
+    "labor_limit_months": 12,
+    "labor_review_from_months": 11,
+    "labor_review_to_months": 13,
+    "abandoned_minutes": 10
+  },
+  "prices": {
+    "labor_consultation": 750,
+    "phone_consultation": 500,
+    "civil_consultation": 750,
+    "commercial_consultation": 1000,
+    "complex_consultation_from": 1500,
+    "insurance_consultation": 1500,
+    "labor_drafting_from": 2500,
+    "commercial_filing_from": 3000,
+    "commercial_memo_from": 3000,
+    "commercial_objection_from": 3500,
+    "shares_letter": 2000,
+    "notarization": 500,
+    "detainee_inquiry": 5000,
+    "contract_review_from": 3000,
+    "trademark_registration": 5000,
+    "trademark_gov_fees_approx": 6750,
+    "trademark_objection_from": 4000,
+    "company_formation": 10000,
+    "articles_amendment_from": 6000,
+    "pr_stage1": 750,
+    "pr_stage2": 9250,
+    "pr_stage3": 10000,
+    "pr_total": 20000,
+    "patent_stage1": 1550,
+    "patent_stage2": 25000,
+    "patent_stage3": 35000,
+    "patent_total": 61550,
+    "fdi_stage1": 1000,
+    "fdi_stage2": 20000,
+    "fdi_stage3": 25000,
+    "fdi_total": 46000
+  },
+  "currencies": {
+    "note": "Knowledge base 4.4: an amount in another currency is converted to riyals at the day's rate, then the threshold decides. The riyal and these currencies are pegged to the US dollar (pegged_per_usd: units for one dollar), so their rate is fixed; any other currency needs the day's table the server reads (server/rates.js). Without a rate, with the currency unclear, or within the margin of the threshold after the conversion, the team decides. The margin and the table's age are the system's settings: the knowledge base does not set them.",
+    "sar_per_usd": 3.75,
+    "pegged_per_usd": {"USD":1,"AED":3.6725,"QAR":3.64,"BHD":0.376,"OMR":0.3845,"JOD":0.709},
+    "margin": 0.05,
+    "rates_max_age_days": 3
+  },
+  "consultations": {
+    "labor": {"price":"labor_consultation","phone":true,"name":{"arabic":"استشارة عمالية","english":"a labour consultation"}},
+    "civil": {"price":"civil_consultation","phone":false,"name":{"arabic":"استشارة حقوقية","english":"a civil consultation"}},
+    "family": {"price":"civil_consultation","phone":true,"name":{"arabic":"استشارة أحوال شخصية","english":"a family law consultation"}},
+    "inheritance": {"price":"civil_consultation","phone":false,"name":{"arabic":"استشارة في التركات","english":"an inheritance consultation"}},
+    "commercial": {
+      "price": "commercial_consultation",
+      "complex_from": "complex_consultation_from",
+      "name": {"arabic":"استشارة تجارية","english":"a commercial consultation"}
+    },
+    "tax": {
+      "price": "commercial_consultation",
+      "complex_from": "complex_consultation_from",
+      "name": {"arabic":"استشارة ضريبية","english":"a tax consultation"}
+    },
+    "trademark": {
+      "price": "commercial_consultation",
+      "dispute_from": "complex_consultation_from",
+      "name": {"arabic":"استشارة علامة تجارية","english":"a trademark consultation"}
+    },
+    "patent": {
+      "price": "commercial_consultation",
+      "dispute_from": "complex_consultation_from",
+      "name": {"arabic":"استشارة براءة اختراع","english":"a patent consultation"}
+    },
+    "ip": {
+      "price": "commercial_consultation",
+      "dispute_from": "complex_consultation_from",
+      "name": {"arabic":"استشارة ملكية فكرية","english":"an intellectual property consultation"}
+    },
+    "insurance": {"price":"insurance_consultation","name":{"arabic":"استشارة تأمينية","english":"an insurance consultation"}},
+    "phone": {
+      "price": "phone_consultation",
+      "format": "phone",
+      "name": {"arabic":"استشارة هاتفية لمدة 30 دقيقة دون رأي مكتوب","english":"a 30-minute phone consultation without a written opinion"}
+    }
+  },
+  "cards": {
+    "labor": {
+      "name": {"arabic":"عمالي","english":"Labour"},
+      "consultation": "labor",
+      "threshold": 80000,
+      "monetary_only": true,
+      "time_rule": true,
+      "group_review": "q_labor_group",
+      "below": {"reply":"decline_labor","options":["consultation","phone","document"]},
+      "document": {"reply":"offer_labor_drafting","then":"refer_quote"},
+      "first": ["q_labor_status","q_labor_amount","q_labor_confirm_end"],
+      "consultation_asks_date": true,
+      "followups": ["q_labor_reason","q_labor_investigation","q_labor_contract","q_labor_prior","q_labor_contract_amount","q_labor_contract_remaining"],
+      "amount_estimate": "q_labor_items"
+    },
+    "commercial": {
+      "name": {"arabic":"تجاري وتحصيل ديون","english":"Commercial and debt recovery"},
+      "consultation": "commercial",
+      "threshold": 250000,
+      "below_outside_ksa_refer": true,
+      "below": {"reply":"decline_commercial","reply_complex":"decline_commercial_complex","options":["consultation","document"]},
+      "document": {"reply":"offer_commercial_tasks","then":"refer_quote"},
+      "first": ["q_comm_amount","q_comm_parties"],
+      "followups": ["q_comm_documents","q_comm_prior_judgment","q_comm_debtor_position","q_comm_prior_notice","q_comm_arbitration"]
+    },
+    "partners": {
+      "name": {"arabic":"نزاعات الشركاء والشركات","english":"Partner and company disputes"},
+      "consultation": "commercial",
+      "threshold": 250000,
+      "monetary_only": true,
+      "below_outside_ksa_refer": true,
+      "below": {"reply":"decline_commercial","reply_complex":"decline_commercial_complex","options":["consultation","document"]},
+      "document": {"reply":"offer_commercial_tasks","then":"refer_quote"},
+      "first": ["q_part_dispute","q_part_amount"],
+      "followups": ["q_part_capacity","q_part_entity","q_part_stage"]
+    },
+    "tax": {
+      "name": {"arabic":"ضريبي وزكوي وجمركي","english":"Tax, zakat and customs"},
+      "consultation": "tax",
+      "threshold": 500000,
+      "below": {"reply":"decline_tax","reply_complex":"decline_tax_complex","options":["consultation"]},
+      "document": {"reply":"offer_quote","then":"refer_quote"},
+      "first": ["q_tax_decision_amount","q_tax_notice"],
+      "followups": ["q_tax_period","q_tax_count"]
+    },
+    "civil": {
+      "name": {"arabic":"قضايا حقوقية","english":"Civil claims"},
+      "consultation": "civil",
+      "threshold": 250000,
+      "monetary_only": true,
+      "below": {"reply":"decline_civil","options":["consultation"]},
+      "document": {"reply":"offer_quote","then":"refer_quote"},
+      "first": ["q_request_capacity","q_civil_amount"],
+      "followups": ["q_case_status_hearing","q_outcome_city","q_parties_in_ksa"],
+      "below_outside_ksa_refer": true
+    },
+    "real_estate": {
+      "name": {"arabic":"عقار وإيجار","english":"Real estate"},
+      "consultation": "civil",
+      "threshold": 250000,
+      "monetary_only": true,
+      "below": {"reply":"decline_civil","options":["consultation"]},
+      "document": {"reply":"offer_quote","then":"refer_quote"},
+      "first": ["q_re_type_location","q_re_request"],
+      "followups": ["q_re_amount","q_re_documents_stage","q_re_foreign"],
+      "below_outside_ksa_refer": true,
+      "foreign_buyer_quote": true
+    },
+    "family": {
+      "name": {"arabic":"أحوال شخصية","english":"Family law"},
+      "consultation": "family",
+      "document": {"reply":"offer_quote","then":"refer_quote"},
+      "first": ["q_request_capacity","q_case_status_hearing"],
+      "followups": ["q_outcome_city","q_parties_in_ksa"]
+    },
+    "inheritance": {
+      "name": {"arabic":"تركات","english":"Inheritance"},
+      "consultation": "inheritance",
+      "tasks": {"shares_letter":{"reply":"offer_shares_letter","then":"refer"}},
+      "first": ["q_inh_request","q_inh_heirs","q_inh_appoint"],
+      "followups": ["q_inh_estate","q_inh_dispute","q_inh_relations_deed"]
+    },
+    "contracts": {
+      "name": {"arabic":"صياغة العقود ومراجعتها","english":"Contracts"},
+      "consultation": "commercial",
+      "tasks": {"review":{"reply":"offer_contract_review","then":"refer_quote"},"drafting":{"reply":"offer_contract_drafting","then":"refer_quote"}},
+      "service_card": true,
+      "first": ["q_contract_type","q_contract_service"],
+      "followups": ["q_contract_language_pages","q_contract_purpose_parties","q_contract_signed_concern","q_contract_deadline"]
+    },
+    "enforcement": {
+      "name": {"arabic":"تنفيذ وسندات","english":"Enforcement and promissory notes"},
+      "consultation": "commercial",
+      "threshold": 300000,
+      "notes_only": true,
+      "below": {"reply":"decline_enforcement","options":["consultation"]},
+      "not_note": {"reply":"decline_enforcement_other","options":["consultation"]},
+      "first": ["q_enf_value","q_enf_role"],
+      "followups": ["q_enf_reason","q_enf_original_stage"]
+    },
+    "trademark": {
+      "name": {"arabic":"علامات تجارية","english":"Trademarks"},
+      "consultation": "trademark",
+      "tasks": {
+        "registration": {"reply":"offer_tm_registration","then":"refer"},
+        "transfer": {"reply":"offer_quote","then":"refer_quote"},
+        "follow_up": {"reply":"offer_tm_objection","then":"refer_quote"},
+        "objection": {"reply":"offer_tm_objection","then":"refer_quote","ask":"q_tm_rejection_date","urgent":"tm_rejection"},
+        "dispute": {"reply":"consult_offer_from","then":"booking"}
+      },
+      "service_card": true,
+      "first": ["q_tm_need","q_tm_country_activity"],
+      "followups": ["q_tm_stage_rejection"]
+    },
+    "patent": {
+      "name": {"arabic":"براءات الاختراع والتصاميم","english":"Patents and designs"},
+      "consultation": "patent",
+      "tasks": {"registration":{"reply":"offer_patent_stages","then":"booking"},"dispute":{"reply":"consult_offer_from","then":"booking"}},
+      "service_card": true,
+      "first": ["q_patent_need","q_patent_country"],
+      "followups": ["q_patent_model_disclosure"]
+    },
+    "ip_other": {
+      "name": {"arabic":"ملكية فكرية أخرى","english":"Other intellectual property"},
+      "consultation": "ip",
+      "first": ["q_ip_other_topic"],
+      "followups": []
+    },
+    "company_formation": {
+      "name": {"arabic":"تأسيس الشركات","english":"Company formation"},
+      "consultation_quote": true,
+      "tasks": {"formation":{"reply":"offer_company_formation","then":"refer"},"amendment":{"reply":"offer_articles_amendment","then":"refer_quote"}},
+      "service_card": true,
+      "first": ["q_company_activity","q_company_existing_entity"],
+      "followups": ["q_company_partners_entity","q_company_consult_or_quote"]
+    },
+    "foreign_investment": {
+      "name": {"arabic":"استثمار أجنبي","english":"Foreign investment"},
+      "consultation_offer": {"reply":"offer_fdi_stages","then":"booking"},
+      "tasks": {"formation":{"reply":"offer_fdi_stages","then":"booking"}},
+      "service_card": true,
+      "first": ["q_company_activity","q_company_existing_entity"],
+      "followups": ["q_company_partners_entity","q_company_consult_or_quote"]
+    },
+    "premium_residency": {
+      "name": {"arabic":"الإقامة المميزة","english":"Premium Residency"},
+      "consultation_offer": {"reply":"offer_pr_stages","then":"booking"},
+      "service_card": true,
+      "first": ["q_pr_new_existing","q_pr_type"],
+      "followups": ["q_pr_deadline"],
+      "after_questions": {"reply":"offer_pr_stages","then":"booking"}
+    },
+    "criminal": {
+      "name": {"arabic":"جنائي وموقوفون","english":"Criminal and detainees"},
+      "no_price": true,
+      "no_overlay": true,
+      "first": ["q_crim_need","q_crim_place"],
+      "followups": ["q_crim_charge_stage","q_crim_hearing_capacity"]
+    },
+    "insurance": {"name":{"arabic":"تأمين","english":"Insurance"},"consultation":"insurance","first":["q_ins_topic","q_party_amount"],"followups":[]},
+    "arbitration": {
+      "name": {"arabic":"تحكيم وسوق مالية وتخصصات أخرى","english":"Arbitration and other specialised matters"},
+      "consultation": "commercial",
+      "first": ["q_arb_topic","q_party_amount"],
+      "followups": ["q_deadlines"]
+    },
+    "notarization": {
+      "name": {"arabic":"توثيق أمام كاتب العدل","english":"Notarization"},
+      "questions_before_offer": true,
+      "consultation_offer": {"reply":"offer_notarization","then":"booking"},
+      "tasks": {"notarization":{"reply":"offer_notarization","then":"booking"}},
+      "service_card": true,
+      "first": ["q_notary_docs","q_notary_format"],
+      "followups": [],
+      "after_questions": {"reply":"offer_notarization","then":"booking"}
+    },
+    "general": {"name":{"arabic":"غير محدد","english":"Not specified"},"first":["q_topic"],"followups":[]}
+  },
+  "case_overlays": {
+    "existing": {"first":["q_case_next_hearing","q_case_need"],"followups":["q_case_type_capacity","q_case_stage_judgment","q_case_amount"]},
+    "judgment": {"first":["q_judgment_type","q_judgment_dates"],"followups":["q_judgment_prior"],"urgent_unless_far":true}
+  },
+  "excluded": {
+    "government_admin": {"reply":"decline_service"},
+    "residency_immigration": {"reply":"decline_service"},
+    "medical_malpractice": {"reply":"decline_service"},
+    "traffic_individual": {"reply":"decline_service"},
+    "government_attestation": {"reply":"decline_service"},
+    "non_legal": {"reply":"decline_service"},
+    "domestic_labor": {"reply":"decline_service"},
+    "foreign_case": {"reply":"decline_service"},
+    "finished_case": {"reply":"decline_service"},
+    "enforcement_exhausted": {"reply":"decline_service"},
+    "prison_outside_riyadh": {"reply":"decline_prison_outside"}
+  },
+  "questions": {
+    "q_goal": {"q":1,"known":["goal"]},
+    "q_topic": {"q":1,"known":["specialty"]},
+    "q_urgent": {"q":2,"known_all":["event_kind","event_days_until"],"known_all_if":{"field":"event_kind","in":["hearing","investigation","auction"]}},
+    "q_urgent_detained": {"q":2,"known":["detention_place"],"short":{"known":"client_role","id":"q_urgent_detained_place"}},
+    "q_urgent_detained_place": {"q":2,"known":["detention_place"]},
+    "q_check_new": {"q":2,"known":["case_status"]},
+    "q_amount_estimate": {"q":1,"known":["amount"]},
+    "q_existing_client": {"q":1,"known":["file_reference"]},
+    "q_booking_name": {"q":1,"known":["name"]},
+    "q_labor_status": {"q":2,"known":["employment_end_months_ago"],"when":{"field":"employment_ongoing","not":true},"short":{"known":"employment_ongoing","id":"q_labor_end"},"again":true},
+    "q_labor_end": {"q":1,"known":["employment_end_months_ago"],"when":{"field":"employment_ongoing","not":true}},
+    "q_labor_amount": {"q":1,"known":["amount"],"when":{"field":"monetary","not":false}},
+    "q_labor_group": {"q":2},
+    "q_labor_items": {"q":1,"known":["amount"]},
+    "q_labor_time_indicators": {"q":2,"known":["acknowledgment_or_excuse"]},
+    "q_labor_ack_written": {"q":1},
+    "q_labor_confirm_end": {"q":1,"when":{"field":"employment_end_needs_confirmation","is":true},"at_least":{"field":"employment_end_months_ago","value":6}},
+    "q_labor_reason": {"q":2,"when":{"field":"employment_ongoing","not":true}},
+    "q_labor_investigation": {"q":1,"when":{"field":"dismissed","is":true}},
+    "q_labor_contract": {"q":1,"known":["contract_compensation"],"when":{"field":"employment_ongoing","not":true}},
+    "q_labor_prior": {"q":1,"known":["prior_procedure"]},
+    "q_comm_amount": {"q":1,"known":["amount"]},
+    "q_comm_parties": {"q":1,"known":["parties"]},
+    "q_comm_documents": {"q":1},
+    "q_comm_debtor_position": {"q":2},
+    "q_comm_prior_notice": {"q":1,"known":["stage"]},
+    "q_comm_prior_judgment": {"q":1},
+    "q_comm_arbitration": {"q":1},
+    "q_part_dispute": {"q":2,"known":["desired_outcome"]},
+    "q_part_amount": {"q":1,"known":["amount"],"when":{"field":"monetary","not":false}},
+    "q_part_capacity": {"q":1,"known":["client_role"]},
+    "q_part_entity": {"q":2},
+    "q_part_stage": {"q":1,"known":["stage"]},
+    "q_tax_decision_amount": {"q":2,"known":["amount"]},
+    "q_tax_notice": {"q":1,"known":["event_days_until"]},
+    "q_tax_period": {"q":2},
+    "q_tax_count": {"q":1},
+    "q_request_capacity": {"q":2,"known":["client_role"]},
+    "q_civil_amount": {"q":1,"known":["amount"],"when":{"field":"monetary","not":false}},
+    "q_case_status_hearing": {"q":1,"known":["case_status"]},
+    "q_outcome_city": {"q":2,"known":["desired_outcome"],"short":{"known":"city","id":"q_outcome"}},
+    "q_outcome": {"q":1,"known":["desired_outcome"]},
+    "q_parties_in_ksa": {"q":1,"known":["case_outside_ksa"]},
+    "q_inh_request": {"q":1,"known":["desired_outcome"]},
+    "q_inh_heirs": {"q":1,"known":["heirs_count"]},
+    "q_inh_appoint": {"q":1},
+    "q_inh_estate": {"q":2,"known":["amount"]},
+    "q_inh_dispute": {"q":2},
+    "q_inh_relations_deed": {"q":2},
+    "q_re_type_location": {"q":1},
+    "q_re_request": {"q":1,"known":["desired_outcome"]},
+    "q_re_amount": {"q":1,"known":["amount"],"when":{"field":"monetary","not":false}},
+    "q_re_documents_stage": {"q":2,"known":["stage"]},
+    "q_re_foreign": {"q":1,"when":{"field":"foreign_buyer","is":true}},
+    "q_contract_type": {"q":1},
+    "q_contract_service": {"q":1,"known":["task_type"]},
+    "q_contract_language_pages": {"q":2},
+    "q_contract_purpose_parties": {"q":2,"when":{"field":"confidential","not":true}},
+    "q_contract_signed_concern": {"q":2,"when":{"field":"confidential","not":true}},
+    "q_contract_deadline": {"q":1,"when":{"field":"confidential","not":true}},
+    "q_enf_value": {"q":1,"known":["amount"]},
+    "q_enf_role": {"q":1,"known":["client_role"]},
+    "q_enf_reason": {"q":2},
+    "q_enf_original_stage": {"q":2,"known":["stage"]},
+    "q_tm_need": {"q":1,"known":["task_type"]},
+    "q_tm_country_activity": {"q":2},
+    "q_tm_stage_rejection": {"q":2},
+    "q_patent_need": {"q":1,"known":["task_type"]},
+    "q_patent_country": {"q":1},
+    "q_patent_model_disclosure": {"q":2},
+    "q_ip_other_topic": {"q":1},
+    "q_company_activity": {"q":1},
+    "q_company_existing_entity": {"q":1},
+    "q_company_partners_entity": {"q":2},
+    "q_company_consult_or_quote": {"q":1,"known":["goal","task_type"]},
+    "q_pr_new_existing": {"q":1},
+    "q_pr_type": {"q":1},
+    "q_pr_deadline": {"q":1,"known":["event_days_until"]},
+    "q_crim_need": {"q":1},
+    "q_crim_place": {"q":1,"known":["detention_place"],"when":{"field":"detained","not":false},"unless":{"field":"detention_place_unknown","is":true}},
+    "q_crim_charge_stage": {"q":2,"known":["stage"]},
+    "q_crim_hearing_capacity": {"q":2,"short":{"known":"client_role","id":"q_crim_hearing"}},
+    "q_crim_hearing": {"q":1},
+    "q_ins_topic": {"q":1},
+    "q_arb_topic": {"q":1},
+    "q_party_amount": {"q":2,"known":["amount"]},
+    "q_deadlines": {"q":1,"known":["event_days_until"]},
+    "q_notary_docs": {"q":2},
+    "q_notary_format": {"q":1,"known":["consultation_format"]},
+    "q_case_next_hearing": {"q":1,"known":["event_days_until"]},
+    "q_case_need": {"q":1,"known":["goal"]},
+    "q_case_type_capacity": {"q":2,"known":["client_role"]},
+    "q_case_stage_judgment": {"q":2,"known":["stage"]},
+    "q_case_amount": {"q":1,"known":["amount"]},
+    "q_judgment_type": {"q":1},
+    "q_judgment_dates": {"q":2,"dates":2},
+    "q_judgment_new_evidence": {"q":1,"when":{"field":"task_type","is":"reconsideration"}},
+    "q_labor_contract_amount": {"q":1,"when":{"field":"contract_compensation","is":true}},
+    "q_labor_contract_remaining": {"q":1,"when":{"field":"contract_compensation","is":false},"unless":{"field":"contract_expired","is":true}},
+    "q_crim_city": {"q":1,"known":["in_riyadh"]},
+    "q_tm_rejection_date": {"q":1},
+    "q_judgment_prior": {"q":2}
+  },
+  "awards": {
+    "general": {
+      "arabic": "أفضل مكتب محاماة في المملكة 2025 (Law.com)",
+      "english": "Best Law Firm in Saudi Arabia 2025 (Law.com)"
+    },
+    "commercial": {
+      "arabic": "أفضل مكتب قانوني تجاري في السعودية 2025 (Global Law Expert)",
+      "english": "Best Commercial Law Firm in Saudi Arabia 2025 (Global Law Expert)"
+    },
+    "partners": {
+      "arabic": "أفضل مكتب قانوني تجاري في السعودية 2025 (Global Law Expert)",
+      "english": "Best Commercial Law Firm in Saudi Arabia 2025 (Global Law Expert)"
+    },
+    "labor": {"arabic":"Labour and Employment Law Firm of the Year 2025","english":"Labour and Employment Law Firm of the Year 2025"},
+    "trademark": {
+      "arabic": "IP Law Firm of the Year 2025",
+      "english": "IP Law Firm of the Year 2025"
+    },
+    "patent": {
+      "arabic": "IP Law Firm of the Year 2025",
+      "english": "IP Law Firm of the Year 2025"
+    },
+    "ip_other": {"arabic":"IP Law Firm of the Year 2025","english":"IP Law Firm of the Year 2025"},
+    "real_estate": {
+      "arabic": "أفضل شركة محاماة في التشييد والعقارات 2025 (ALB Middle East)",
+      "english": "Construction and Real Estate Law Firm of the Year 2025 (ALB Middle East)"
+    }
+  }
+}

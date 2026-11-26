@@ -24,6 +24,8 @@ The combined development runner uses `--no-bail` so an API restart/error does no
 
 ## Mock message flow
 
+The delivered Node agent is integrated through `agent/dashboard-adapter.cjs`. See [AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) for credentials, memory and validation, [AGENT_REVIEW.md](docs/AGENT_REVIEW.md) for review findings, and [WHATSAPP_QR.md](docs/WHATSAPP_QR.md) for the Evolution QR login supported by the engineer's code. The official Meta provider remains available. Do not start the engineer's standalone server alongside this dashboard.
+
 Sign in, then use `POST /dev/inbound` on the API with the session cookie and an allowed Origin:
 
 ```json

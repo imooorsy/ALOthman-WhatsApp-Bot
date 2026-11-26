@@ -1,0 +1,449 @@
+{
+  "version": 3,
+  "status": "draft",
+  "source": "office-knowledge-base.md (2026-11-12). source = the reply code in the knowledge base when the text is the office's own; composed = worded from its rules, needs the office's approval.",
+  "versions": ["arabic", "english"],
+  "greetings": {
+    "salam":   { "arabic": "وعليكم السلام ورحمة الله وبركاته", "english": "Wa alaikum assalam" },
+    "morning": { "arabic": "صباح النور", "english": "Good morning" },
+    "evening": { "arabic": "مساء النور", "english": "Good evening" },
+    "hello":   { "arabic": "أهلًا وسهلًا", "english": "Hello" },
+    "afiya":   { "arabic": "الله يعافيكم", "english": "" }
+  },
+  "replies": {
+    "welcome_full": { "kind": "statement", "source": "6.1", "variants": [
+      { "arabic": "حياكم الله في {office_name}، معكم عثمان. كيف نقدر نخدمكم؟", "english": "Welcome to {office_name}. This is Othman. How can we help?" } ] },
+    "welcome_short": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "حياكم الله في {office_name}، معكم عثمان.", "english": "Welcome to {office_name}. This is Othman." } ] },
+    "identity": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "معكم عثمان، المساعد الذكي لخدمة العملاء في {office_name}. أساعدكم في الوصول للخدمة المناسبة وتنسيق الحجز، والاستشارة نفسها يقدمها المحامي المختص.", "english": "This is Othman, the AI customer service assistant of {office_name}. I help you find the right service and arrange a booking; the consultation itself is given by the specialist lawyer." } ] },
+    "lead": { "kind": "lead", "source": "4.2", "variants": [
+      { "arabic": "لنتمكن من خدمتكم:", "english": "To help you:" } ] },
+    "ack": { "kind": "ack", "source": "composed", "variants": [
+      { "arabic": "شكرًا للتوضيح.", "english": "Thank you for clarifying." },
+      { "arabic": "شكرًا لكم.", "english": "Thank you." } ] },
+
+    "q_goal": { "kind": "question", "q": 1, "source": "6.2", "variants": [
+      { "arabic": "حتى نوجهكم للخدمة المناسبة: هل ترغبون باستشارة لمعرفة خياراتكم، أم إعداد مستند، أم تولّي القضية؟", "english": "To guide you to the right service: would you like a consultation to understand your options, a document drafted, or for us to take on the case?" } ] },
+    "q_topic": { "kind": "question", "q": 1, "source": "composed", "variants": [
+      { "arabic": "ما موضوع طلبكم باختصار؟", "english": "What is your matter about, briefly?" } ] },
+    "q_urgent": { "kind": "question", "q": 2, "source": "6.11", "variants": [
+      { "arabic": "ما تاريخ الجلسة أو التبليغ، وما نوع الإجراء؟ سأعطي الطلب أولوية عند إحالته للمختص.", "english": "What is the date of the hearing or notice, and what type of procedure is it? I will give your request priority when passing it to the specialist." } ] },
+    "q_urgent_detained": { "kind": "question", "q": 2, "source": "composed", "variants": [
+      { "arabic": "أين مكان التوقيف (المدينة، واسم السجن أو المركز)، ومتى موعد التحقيق إن وُجد؟ وما صفتكم بالنسبة للموقوف؟", "english": "Where is the person held (city, and the name of the prison or police station), and when is the investigation, if known? And what is your relation to them?" } ] },
+    "q_urgent_detained_place": { "kind": "question", "q": 2, "source": "composed", "variants": [
+      { "arabic": "أين مكان التوقيف (المدينة، واسم السجن أو المركز)، ومتى موعد التحقيق إن وُجد؟", "english": "Where is the person held (city, and the name of the prison or police station), and when is the investigation, if known?" } ] },
+    "q_check_new": { "kind": "question", "q": 2, "source": "composed", "variants": [
+      { "arabic": "هل هذه مطالبة جديدة لم تُرفع بعد؟ وهل يوجد موعد قريب لجلسة أو مهلة؟", "english": "Is this a new claim that has not been filed yet? And is there an upcoming hearing or deadline?" } ] },
+    "q_amount_estimate": { "kind": "question", "q": 1, "source": "composed", "variants": [
+      { "arabic": "هل يمكن ذكر تقدير تقريبي للمبلغ؟", "english": "Could you give a rough estimate of the amount?" } ] },
+    "q_existing_client": { "kind": "question", "q": 1, "source": "6.13", "variants": [
+      { "arabic": "فضلًا زودونا برقم الملف أو اسم الموكل، وصفتكم في الملف، لنحيل طلبكم للفريق المسؤول.", "english": "Please share your file reference or the client name and your relation to the file, so we can pass your request to the responsible team." } ] },
+    "q_booking_name": { "kind": "question", "q": 1, "source": "composed", "variants": [
+      { "arabic": "فضلًا زودونا بالاسم الكامل لاستكمال طلب الحجز.", "english": "Please share your full name to complete the booking request." } ] },
+
+    "q_labor_status": { "kind": "question", "q": 2, "source": "4.2", "variants": [
+      { "arabic": "هل علاقة العمل مستمرة؟ وإذا انتهت، متى انتهت رسميًا؟", "english": "Is your employment still ongoing? If it ended, what was the official end date?" } ] },
+    "q_labor_end": { "kind": "question", "q": 1, "source": "4.2", "variants": [
+      { "arabic": "متى انتهت علاقة العمل رسميًا؟", "english": "What was the official end date of your employment?" } ] },
+    "q_labor_amount": { "kind": "question", "q": 1, "source": "4.2", "variants": [
+      { "arabic": "كم تقدّرون إجمالي المبلغ الذي تطالبون به؟", "english": "Roughly what is the total amount you are claiming?" } ] },
+    "q_labor_group": { "kind": "question", "q": 2, "source": "4.2", "variants": [
+      { "arabic": "كم عدد العمال المشمولين بالمطالبة؟ وكم مجموع المبالغ التي تطالبون بها جميعًا؟", "english": "How many workers are part of the claim, and what is the total amount you are all claiming?" } ] },
+    "q_labor_items": { "kind": "question", "q": 1, "source": "4.2", "variants": [
+      { "arabic": "هل يمكن ذكر تقدير تقريبي للمبلغ، أو بنود المطالبة (رواتب، نهاية خدمة، إجازات، تعويض، عمولات)؟", "english": "Could you give a rough estimate, or the items you are claiming (salaries, end of service, leave, compensation, commissions)?" } ] },
+    "q_labor_ack_written": { "kind": "question", "q": 1, "source": "composed, 4.3", "variants": [
+      { "arabic": "شكرًا للتوضيح. قد توجد مسألة تتعلق بمدة قبول المطالبة، ويقدّر المختص أثر ما ذكرتموه. هل لديكم ما يثبته كتابةً، كرسالة أو مستند؟ لا نحتاج نسخة منه الآن.", "english": "Thank you. There may be an issue with the time limit for accepting this claim, and the specialist will assess the effect of what you mentioned. Do you have it in writing, such as a message or a document? We don't need a copy for now." } ] },
+    "q_labor_time_indicators": { "kind": "question", "q": 2, "source": "4.3", "variants": [
+      { "arabic": "هل سبق تقديم طلب تسوية (مكتب العمل أو التسوية الودية) أو دعوى، ومتى؟ وهل يوجد إقرار من صاحب العمل بالمبلغ، أو سبب للتأخر؟", "english": "Have you filed a settlement request (labour office or amicable settlement) or a lawsuit before, and when? And has the employer acknowledged the amount, or is there a reason for the delay?" } ] },
+    "q_labor_confirm_end": { "kind": "question", "q": 1, "source": "4.2", "variants": [
+      { "arabic": "هل يطابق هذا التاريخ تاريخ انتهاء العلاقة في العقد أو في إشعار الإنهاء؟", "english": "Does this date match the end date in the contract or in the termination notice?" } ] },
+    "q_labor_reason": { "kind": "question", "q": 2, "source": "4.5", "variants": [
+      { "arabic": "ما سبب انتهاء العلاقة أو الفصل؟ وهل يوجد قرار فصل مكتوب؟", "english": "What was the reason for the termination? And is there a written termination decision?" } ] },
+    "q_labor_investigation": { "kind": "question", "q": 1, "source": "4.5", "variants": [
+      { "arabic": "هل أُجري معكم تحقيق قبل الفصل؟", "english": "Was there an investigation before the dismissal?" } ] },
+    "q_labor_contract": { "kind": "question", "q": 1, "source": "4.5", "variants": [
+      { "arabic": "هل ينص عقد العمل على تعويض عند الإنهاء؟", "english": "Does the employment contract provide for compensation on termination?" } ] },
+    "q_labor_prior": { "kind": "question", "q": 1, "source": "4.5", "variants": [
+      { "arabic": "هل قُدّم طلب تسوية أو دعوى حتى الآن، ومتى؟", "english": "Has a settlement request or lawsuit been filed so far, and when?" } ] },
+
+    "q_comm_amount": { "kind": "question", "q": 1, "source": "5.1", "variants": [
+      { "arabic": "ما سبب المطالبة وكم إجمالي المبلغ؟", "english": "What is the total amount claimed?" } ] },
+    "q_comm_parties": { "kind": "question", "q": 1, "source": "5.1", "variants": [
+      { "arabic": "هل الطرفان شركتان أو أفراد؟", "english": "Are both parties companies or individuals?" } ] },
+    "q_comm_documents": { "kind": "question", "q": 1, "source": "5.1", "variants": [
+      { "arabic": "هل لديكم عقد أو أمر شراء أو إثبات تسليم أو مطابقة رصيد؟", "english": "Do you have a contract, purchase order, proof of delivery or balance confirmation?" } ] },
+    "q_comm_debtor_position": { "kind": "question", "q": 2, "source": "5.1", "variants": [
+      { "arabic": "هل يُقر المدين بالمبلغ ويطلب الأجل فقط، أم ينكره؟ وهل هو قادر ماليًا على السداد حسب علمكم؟", "english": "Does the debtor acknowledge the amount and only ask for time, or deny it? And as far as you know, is the debtor able to pay?" } ] },
+    "q_comm_prior_notice": { "kind": "question", "q": 1, "source": "5.1", "variants": [
+      { "arabic": "هل سبق إرسال مطالبة أو إنذار للمدين، أو رفع دعوى؟", "english": "Have you already sent the debtor a demand or notice, or filed a lawsuit?" } ] },
+    "q_comm_prior_judgment": { "kind": "question", "q": 1, "source": "5.1", "variants": [
+      { "arabic": "هل صدر حكم سابق ولم يُسدَّد؟", "english": "Has a judgment already been issued and not paid?" } ] },
+    "q_comm_arbitration": { "kind": "question", "q": 1, "source": "5.1", "variants": [
+      { "arabic": "هل يوجد في العقد شرط تحكيم؟", "english": "Does the contract have an arbitration clause?" } ] },
+
+    "q_part_dispute": { "kind": "question", "q": 2, "source": "5.2", "variants": [
+      { "arabic": "ما نوع الخلاف، وما النتيجة المطلوبة (إثبات شراكة، أو تخارج، أو مطالبة مالية، أو عزل مدير)؟", "english": "What is the dispute about, and what outcome do you want (proving the partnership, exiting, a financial claim, or removing a manager)?" } ] },
+    "q_part_amount": { "kind": "question", "q": 1, "source": "5.2", "variants": [
+      { "arabic": "كم القيمة التقريبية للحصة أو المطالبة؟", "english": "What is the approximate value of the share or the claim?" } ] },
+    "q_part_capacity": { "kind": "question", "q": 1, "source": "5.2", "variants": [
+      { "arabic": "ما صفتكم (شريك، أو مدير، أو مستثمر)؟", "english": "What is your role (partner, manager or investor)?" } ] },
+    "q_part_entity": { "kind": "question", "q": 2, "source": "5.2", "variants": [
+      { "arabic": "ما نوع الكيان وبلد تسجيله؟ وهل يوجد عقد تأسيس أو اتفاق شركاء؟", "english": "What type of entity is it and where is it registered? And is there a memorandum of association or partners' agreement?" } ] },
+    "q_part_stage": { "kind": "question", "q": 1, "source": "5.2", "variants": [
+      { "arabic": "ما المرحلة الحالية للخلاف؟", "english": "What stage is the dispute at now?" } ] },
+
+    "q_tax_decision_amount": { "kind": "question", "q": 2, "source": "5.3", "variants": [
+      { "arabic": "ما نوع القرار أو الربط، وكم المبلغ محل الاعتراض؟", "english": "What type of decision or assessment is it, and what amount is being objected to?" } ] },
+    "q_tax_notice": { "kind": "question", "q": 1, "source": "5.3", "variants": [
+      { "arabic": "ما تاريخ التبليغ؟", "english": "When were you notified?" } ] },
+    "q_tax_period": { "kind": "question", "q": 2, "source": "5.3", "variants": [
+      { "arabic": "ما الفترة محل النزاع؟ وهل سبق تقديم اعتراض، ولأي جهة؟", "english": "Which period is in dispute? And have you already objected, and to which authority?" } ] },
+    "q_tax_count": { "kind": "question", "q": 1, "source": "5.3", "variants": [
+      { "arabic": "كم عدد الفترات أو القرارات محل النزاع؟", "english": "How many periods or decisions are in dispute?" } ] },
+
+    "q_request_capacity": { "kind": "question", "q": 2, "source": "5.4", "variants": [
+      { "arabic": "ما الطلب، وما صفتكم فيه (مدعٍ أو مدعى عليه)؟", "english": "What is the request, and what is your role in it (claimant or defendant)?" } ] },
+    "q_civil_amount": { "kind": "question", "q": 1, "source": "5.4", "variants": [
+      { "arabic": "كم المبلغ المطالب به تقريبًا؟", "english": "Roughly what amount is claimed?" } ] },
+    "q_case_status_hearing": { "kind": "question", "q": 1, "source": "5.4", "variants": [
+      { "arabic": "هل توجد دعوى أو حكم أو جلسة قريبة؟", "english": "Is there a lawsuit, a judgment or an upcoming hearing?" } ] },
+    "q_outcome": { "kind": "question", "q": 1, "source": "5.4", "variants": [
+      { "arabic": "ما النتيجة التي تطلبونها؟", "english": "What outcome are you seeking?" } ] },
+    "q_outcome_city": { "kind": "question", "q": 2, "source": "5.4", "variants": [
+      { "arabic": "ما النتيجة التي تطلبونها، وفي أي مدينة؟", "english": "What outcome are you seeking, and in which city?" } ] },
+    "q_parties_in_ksa": { "kind": "question", "q": 1, "source": "5.4", "variants": [
+      { "arabic": "هل الطرفان داخل المملكة؟", "english": "Are both parties inside Saudi Arabia?" } ] },
+
+    "q_inh_request": { "kind": "question", "q": 1, "source": "5.5", "variants": [
+      { "arabic": "ما المطلوب (قسمة، أو مطالبة بحصة ولو في أصل واحد، أو محاسبة عن ريع، أو خطاب بيان الأنصبة، أو استشارة)؟", "english": "What do you need (a division of the estate, a claim to a share even in one asset, an account of income from the estate, a letter stating the shares, or a consultation)?" } ] },
+    "q_inh_heirs": { "kind": "question", "q": 1, "source": "5.5", "variants": [
+      { "arabic": "كم عدد الورثة؟", "english": "How many heirs are there?" } ] },
+    "q_inh_appoint": { "kind": "question", "q": 1, "source": "5.5", "variants": [
+      { "arabic": "كم من الورثة سيوكلون المكتب؟", "english": "How many of the heirs would appoint the firm?" } ] },
+    "q_inh_estate": { "kind": "question", "q": 2, "source": "5.5", "variants": [
+      { "arabic": "هل التركة معروفة، وما قيمتها التقريبية وأنواع أصولها؟", "english": "Is the estate known, and what is its approximate value and type of assets?" } ] },
+    "q_inh_dispute": { "kind": "question", "q": 2, "source": "5.5", "variants": [
+      { "arabic": "هل يوجد نزاع بين الورثة أم المطلوب تحصيل فقط؟ وهل بينهم قاصر؟", "english": "Is there a dispute between the heirs, or is it only collection? And is any heir a minor?" } ] },
+    "q_inh_relations_deed": { "kind": "question", "q": 2, "source": "5.5", "variants": [
+      { "arabic": "ما صلة الورثة إجمالًا (أبناء، بنات، زوجة، أم)؟ وهل صدر صك حصر ورثة؟", "english": "What is the heirs' relation in general (sons, daughters, wife, mother)? And has the heirs' deed been issued?" } ] },
+
+    "q_re_type_location": { "kind": "question", "q": 1, "source": "5.6", "variants": [
+      { "arabic": "ما نوع العقار وموقعه؟", "english": "What type of property is it, and where is it?" } ] },
+    "q_re_request": { "kind": "question", "q": 1, "source": "5.6", "variants": [
+      { "arabic": "ما المطلوب (نزاع ملكية، إيجار، تطوير، تسليم، تعويض، مراجعة شراء)؟", "english": "What do you need (an ownership dispute, a lease, development, handover, compensation, or a purchase review)?" } ] },
+    "q_re_amount": { "kind": "question", "q": 1, "source": "5.6", "variants": [
+      { "arabic": "كم قيمة المطالبة أو الصفقة تقريبًا؟", "english": "Roughly what is the value of the claim or the deal?" } ] },
+    "q_re_documents_stage": { "kind": "question", "q": 2, "source": "5.6", "variants": [
+      { "arabic": "هل لديكم صك أو عقد؟ وما المرحلة الحالية؟", "english": "Do you have a title deed or a contract? And what stage is the matter at?" } ] },
+    "q_re_foreign": { "kind": "question", "q": 1, "source": "5.6", "variants": [
+      { "arabic": "هل ترغبون باستشارة عن التملّك، أم عرض سعر للامتثال الكامل في الشراء؟", "english": "Would you like a consultation on ownership, or a quote for full compliance support in the purchase?" } ] },
+
+    "q_contract_type": { "kind": "question", "q": 1, "source": "5.7", "variants": [
+      { "arabic": "ما نوع العقد؟", "english": "What type of contract is it?" } ] },
+    "q_contract_service": { "kind": "question", "q": 1, "source": "5.7", "variants": [
+      { "arabic": "هل المطلوب صياغة من البداية أم مراجعة مسودة موجودة؟", "english": "Do you need it drafted from scratch, or an existing draft reviewed?" } ] },
+    "q_contract_language_pages": { "kind": "question", "q": 2, "source": "5.7", "variants": [
+      { "arabic": "ما لغة العقد (عربي، أو إنجليزي، أو ثنائي)، وكم عدد صفحاته تقريبًا؟", "english": "What language is the contract in (Arabic, English or bilingual), and roughly how many pages?" } ] },
+    "q_contract_signed_concern": { "kind": "question", "q": 2, "source": "5.7", "variants": [
+      { "arabic": "هل وُقّع العقد؟ وما أهم بند يقلقكم؟", "english": "Has the contract been signed? And which clause concerns you most?" } ] },
+    "q_contract_deadline": { "kind": "question", "q": 1, "source": "5.7", "variants": [
+      { "arabic": "ما الموعد المطلوب للتسليم؟", "english": "When do you need it by?" } ] },
+
+    "q_enf_value": { "kind": "question", "q": 1, "source": "5.10", "variants": [
+      { "arabic": "كم قيمة السند؟", "english": "What is the value of the note?" } ] },
+    "q_enf_role": { "kind": "question", "q": 1, "source": "5.10", "variants": [
+      { "arabic": "هل أنتم طالب التنفيذ أم المنفذ ضده؟", "english": "Are you the party requesting enforcement, or the party it is against?" } ] },
+    "q_enf_reason": { "kind": "question", "q": 2, "source": "5.10", "variants": [
+      { "arabic": "ما سبب النزاع؟ وهل يُدّعى أن السند مزور، أم أنه صحيح لكنه لم يستحق (مثل سند ضمان)؟", "english": "What is the dispute about? Is the note alleged to be forged, or is it genuine but not yet due (such as a guarantee note)?" } ] },
+    "q_enf_original_stage": { "kind": "question", "q": 2, "source": "5.10", "variants": [
+      { "arabic": "هل أصل السند موجود؟ وما المرحلة الحالية؟", "english": "Is the original note available? And what stage is the matter at?" } ] },
+
+    "q_tm_need": { "kind": "question", "q": 1, "source": "5.11", "variants": [
+      { "arabic": "هل المطلوب تسجيل، أو نقل ملكية، أو متابعة طلب، أو اعتراض على رفض، أو نزاع مع طرف آخر؟", "english": "Is it a registration, a transfer of ownership, following up an application, an objection to a refusal, or a dispute with another party?" } ] },
+    "q_tm_country_activity": { "kind": "question", "q": 2, "source": "5.11", "variants": [
+      { "arabic": "في أي دولة، وما نشاطكم؟", "english": "In which country, and what is your business activity?" } ] },
+    "q_tm_stage_rejection": { "kind": "question", "q": 2, "source": "5.11", "variants": [
+      { "arabic": "في أي مرحلة الطلب؟ وهل وصلكم تبليغ بالرفض، ومتى؟", "english": "What stage is the application at? And have you received a refusal notice, and when?" } ] },
+
+    "q_patent_need": { "kind": "question", "q": 1, "source": "5.11", "variants": [
+      { "arabic": "هل المطلوب تقديم طلب براءة اختراع أو تصميم صناعي، أم نزاع؟", "english": "Do you need to file a patent or industrial design application, or is it a dispute?" } ] },
+    "q_patent_country": { "kind": "question", "q": 1, "source": "5.11", "variants": [
+      { "arabic": "في أي دولة؟", "english": "In which country?" } ] },
+    "q_patent_model_disclosure": { "kind": "question", "q": 2, "source": "3.5", "variants": [
+      { "arabic": "هل الاختراع فكرة لشيء ملموس أم له نموذج قائم؟ وهل سبق تقديم طلب أو نشره؟", "english": "Is the invention an idea for something tangible, or is there a working model? And has it been filed or published before?" } ] },
+
+    "q_ip_other_topic": { "kind": "question", "q": 1, "source": "5.11", "variants": [
+      { "arabic": "ما موضوع حق المؤلف أو التطبيق باختصار؟", "english": "Briefly, what is the copyright or app matter about?" } ] },
+
+    "q_company_activity": { "kind": "question", "q": 1, "source": "5.12", "variants": [
+      { "arabic": "ما النشاط المستهدف؟", "english": "What business activity are you targeting?" } ] },
+    "q_company_existing_entity": { "kind": "question", "q": 1, "source": "5.12", "variants": [
+      { "arabic": "هل يوجد كيان قائم في دولة أخرى؟", "english": "Is there an existing entity in another country?" } ] },
+    "q_company_partners_entity": { "kind": "question", "q": 2, "source": "5.12", "variants": [
+      { "arabic": "كم عدد الشركاء وما جنسياتهم إجمالًا؟ وما نوع الكيان المطلوب (ذات مسؤولية محدودة، أو فرع شركة أجنبية)؟", "english": "How many partners are there and what are their nationalities, in general? And what type of entity do you need (a limited liability company, or a branch of a foreign company)?" } ] },
+    "q_company_consult_or_quote": { "kind": "question", "q": 1, "source": "5.12", "variants": [
+      { "arabic": "هل ترغبون باستشارة قبل البدء، أم عرض سعر مباشرة؟", "english": "Would you like a consultation before starting, or a quote straight away?" } ] },
+
+    "q_pr_new_existing": { "kind": "question", "q": 1, "source": "5.12", "variants": [
+      { "arabic": "هل الطلب جديد أم قائم؟", "english": "Is this a new application or an existing one?" } ] },
+    "q_pr_type": { "kind": "question", "q": 1, "source": "5.12", "variants": [
+      { "arabic": "ما نوع الإقامة (الكفاءة الاستثنائية، الموهبة، مستثمر أعمال، رائد أعمال، مالك عقار، محددة أو غير محددة المدة)؟", "english": "Which type of residency (exceptional competence, talent, business investor, entrepreneur, real estate owner, limited or unlimited duration)?" } ] },
+    "q_pr_deadline": { "kind": "question", "q": 1, "source": "5.12", "variants": [
+      { "arabic": "هل يوجد موعد استكمال أو قرار رفض؟", "english": "Is there a completion deadline or a refusal decision?" } ] },
+
+    "q_crim_need": { "kind": "question", "q": 1, "source": "5.13", "variants": [
+      { "arabic": "هل المطلوب زيارة واستعلام أم تمثيل؟", "english": "Do you need a visit and an inquiry, or representation?" } ] },
+    "q_crim_place": { "kind": "question", "q": 1, "source": "5.13", "variants": [
+      { "arabic": "أين مكان التوقيف (المدينة، واسم السجن أو المركز)؟", "english": "Where is the person held (city, and the name of the prison or police station)?" } ] },
+    "q_crim_charge_stage": { "kind": "question", "q": 2, "source": "5.13", "variants": [
+      { "arabic": "ما التهمة إن كانت معروفة، وفي أي مرحلة (نيابة، أو ابتدائي، أو استئناف)؟", "english": "What is the charge, if known, and what stage is it at (prosecution, first instance or appeal)?" } ] },
+    "q_crim_hearing_capacity": { "kind": "question", "q": 2, "source": "5.13", "variants": [
+      { "arabic": "هل يوجد موعد جلسة؟ وما صفتكم في الطلب (المعني نفسه، أو قريب، أو وكيل)؟", "english": "Is there a hearing date? And what is your capacity in this request (the person concerned, a relative or an agent)?" } ] },
+    "q_crim_hearing": { "kind": "question", "q": 1, "source": "5.13", "variants": [
+      { "arabic": "هل يوجد موعد جلسة؟", "english": "Is there a hearing date?" } ] },
+
+    "q_ins_topic": { "kind": "question", "q": 1, "source": "5.14", "variants": [
+      { "arabic": "ما موضوع النزاع التأميني؟", "english": "What is the insurance dispute about?" } ] },
+    "q_arb_topic": { "kind": "question", "q": 1, "source": "5.14", "variants": [
+      { "arabic": "ما موضوع الطلب باختصار؟", "english": "Briefly, what is the matter about?" } ] },
+    "q_party_amount": { "kind": "question", "q": 2, "source": "5.14", "variants": [
+      { "arabic": "ما الجهة، وكم قيمة المطالبة؟", "english": "Which party or body is involved, and what is the value of the claim?" } ] },
+    "q_deadlines": { "kind": "question", "q": 1, "source": "5.14", "variants": [
+      { "arabic": "هل يوجد موعد أو مهلة قريبة؟", "english": "Is there an upcoming date or deadline?" } ] },
+
+    "q_notary_docs": { "kind": "question", "q": 2, "source": "3.1", "variants": [
+      { "arabic": "كم عدد المستندات، وما نوعها؟", "english": "How many documents are there, and what type?" } ] },
+    "q_notary_format": { "kind": "question", "q": 1, "source": "3.1", "variants": [
+      { "arabic": "هل تفضّلون التوثيق حضوريًا في المكتب أم أونلاين؟", "english": "Would you prefer to notarize in person at the office or online?" } ] },
+
+    "q_case_next_hearing": { "kind": "question", "q": 1, "source": "5.8", "variants": [
+      { "arabic": "متى الجلسة القادمة؟", "english": "When is the next hearing?" } ] },
+    "q_case_need": { "kind": "question", "q": 1, "source": "5.8", "variants": [
+      { "arabic": "ما المطلوب (حضور جلسة، أو مذكرة، أو تولي القضية كاملة)؟", "english": "What do you need (attending a hearing, a memo, or taking on the whole case)?" } ] },
+    "q_case_type_capacity": { "kind": "question", "q": 2, "source": "5.8", "variants": [
+      { "arabic": "ما نوع القضية والجهة، وما صفتكم فيها؟", "english": "What type of case is it and before which body, and what is your role in it?" } ] },
+    "q_case_stage_judgment": { "kind": "question", "q": 2, "source": "5.8", "variants": [
+      { "arabic": "في أي مرحلة القضية الآن؟ وهل لديكم آخر حكم أو محضر؟", "english": "What stage is the case at now? And do you have the latest judgment or session record?" } ] },
+    "q_case_amount": { "kind": "question", "q": 1, "source": "5.8", "variants": [
+      { "arabic": "كم المبلغ المطالب به في الدعوى؟", "english": "What amount is claimed in the case?" } ] },
+
+    "q_judgment_type": { "kind": "question", "q": 1, "source": "5.9", "variants": [
+      { "arabic": "ما نوع الحكم ودرجته (ابتدائي، أو استئناف، أو نهائي)؟", "english": "What type of judgment is it and at what level (first instance, appeal or final)?" } ] },
+    "q_judgment_dates": { "kind": "question", "q": 2, "source": "5.9", "variants": [
+      { "arabic": "ما تاريخ صدوره، وتاريخ تبليغكم به؟", "english": "When was it issued, and when were you notified of it?" } ] },
+    "q_judgment_prior": { "kind": "question", "q": 2, "source": "5.9", "variants": [
+      { "arabic": "هل سبق الاعتراض على الحكم؟ وما نوع القضية؟", "english": "Have you already objected to the judgment? And what type of case is it?" } ] },
+
+    "review_representation": { "kind": "statement", "source": "6.3", "variants": [
+      { "arabic": "شكرًا للتوضيح. الخطوة التالية هي مراجعة المختص للطلب لتحديد إمكانية تولّي القضية ونطاق العمل والأتعاب. سيتواصل معكم الفريق عبر هذا الرقم.", "english": "Thank you. The next step is for our specialist to review your request and confirm whether we can take on the case, the scope of work and the fees. Our team will contact you on this number." } ] },
+    "referred_labor_time": { "kind": "statement", "source": "composed, 4.3", "variants": [
+      { "arabic": "شكرًا للتوضيح. قد توجد مسألة تتعلق بمدة قبول المطالبة، ويقدّر المختص أثر ما ذكرتموه. أُحيل طلبكم للمختص، وسيتواصل معكم الفريق.", "english": "Thank you. There may be an issue with the time limit for accepting this claim, and the specialist will assess the effect of what you mentioned. Your request has been passed to our specialist, and our team will contact you." } ] },
+    "referred": { "kind": "statement", "source": "6.10", "variants": [
+      { "arabic": "أُحيل طلبكم للمختص، وسيتواصل معكم الفريق.", "english": "Your request has been passed to our specialist, and our team will contact you." } ] },
+    "referred_urgent": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "أُحيل طلبكم للمختص بأولوية عاجلة، وسيتواصل معكم الفريق.", "english": "Your request has been passed to our specialist as urgent, and our team will contact you." } ] },
+    "referred_team": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "أُحيل طلبكم للفريق المسؤول، وسيتواصل معكم.", "english": "Your request has been passed to the responsible team, and they will contact you." } ] },
+    "referred_quote": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "أُحيل طلبكم للفريق لتحديد نطاق العمل والأتعاب، وسيتواصل معكم عبر هذا الرقم.", "english": "Your request has been passed to our team to confirm the scope and fees, and they will contact you on this number." } ] },
+    "human": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "أبشروا، أُحيل طلبكم للفريق المختص، وسيتواصل معكم عبر هذا الرقم.", "english": "Of course. Your request has been passed to our team, and they will contact you on this number." } ] },
+    "transfer_unclear": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "أُحيل طلبكم للفريق المختص ليتواصل معكم ويوضح التفاصيل.", "english": "Your request has been passed to our team, who will contact you to go through the details." } ] },
+    "business_development": { "kind": "statement", "source": "5.15", "variants": [
+      { "arabic": "أُحيل طلبكم لفريق تطوير الأعمال، وسيتواصل معكم.", "english": "Your request has been passed to our business development team, who will contact you." } ] },
+    "out_of_hours": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "سيكون تواصل الفريق معكم خلال ساعات العمل: {working_hours}.", "english": "Our team will contact you during working hours: {working_hours}." } ] },
+
+    "consult_price": { "kind": "statement", "source": "6.8", "variants": [
+      { "arabic": "الخدمة المناسبة لطلبكم {consultation_name} بـ {consultation_price} ريال غير شاملة ضريبة القيمة المضافة.", "english": "The right service is {consultation_name} for SAR {consultation_price}, excluding VAT." } ] },
+    "consult_price_from": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "الخدمة المناسبة لطلبكم {consultation_name}، وتبدأ في مثل هذه النزاعات من {consultation_price} ريال غير شاملة ضريبة القيمة المضافة، وهي قيمة مبدئية تُحدد بدقة بعد معرفة التفاصيل.", "english": "The right service for you is {consultation_name}. For matters like this it starts from SAR {consultation_price}, excluding VAT, as an initial figure confirmed once the details are known." } ] },
+    "consult_offer": { "kind": "statement", "source": "6.8", "variants": [
+      { "arabic": "الخدمة المناسبة لطلبكم {consultation_name} بـ {consultation_price} ريال غير شاملة ضريبة القيمة المضافة. للحجز نحتاج: {booking_needs}.", "english": "The right service is {consultation_name} for SAR {consultation_price}, excluding VAT. To book, please share {booking_needs}." } ] },
+    "consult_offer_from": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "الخدمة المناسبة لطلبكم {consultation_name}، وتبدأ في مثل هذه النزاعات من {consultation_price} ريال غير شاملة ضريبة القيمة المضافة، وهي قيمة مبدئية تُحدد بدقة بعد معرفة التفاصيل. للحجز نحتاج: {booking_needs}.", "english": "The right service is {consultation_name}. In such disputes it starts from SAR {consultation_price}, excluding VAT, an initial figure confirmed once the details are known. To book, please share {booking_needs}." } ] },
+    "booking_details": { "kind": "statement", "source": "6.8", "variants": [
+      { "arabic": "للحجز نحتاج: {booking_needs}.", "english": "To book, please share {booking_needs}." } ] },
+    "booking_received": { "kind": "statement", "source": "6.9", "variants": [
+      { "arabic": "شكرًا لكم، استلمنا طلب الحجز. سيتواصل معكم الفريق لتأكيد الموعد وإرسال تفاصيل الدفع.", "english": "Thank you, we have received your booking request. Our team will contact you to confirm the appointment and share the payment details." } ] },
+    "legal_offer": { "kind": "statement", "source": "6.7", "variants": [
+      { "arabic": "أقدر أوضح لكم الخدمة المناسبة وطريقة الحجز. أما تقييم حالتكم وتحديد الإجراء المناسب فيكون ضمن استشارة مدفوعة مع المحامي المختص بـ {consultation_price} ريال غير شاملة ضريبة القيمة المضافة. هل ترغبون في تنسيق موعد؟", "english": "I can explain the right service and how to book. Assessing your situation and advising on the right step is done in a paid consultation with the specialist lawyer, for SAR {consultation_price}, excluding VAT. Would you like us to arrange an appointment?" } ] },
+    "legal_offer_from": { "kind": "statement", "source": "6.7", "variants": [
+      { "arabic": "أقدر أوضح لكم الخدمة المناسبة وطريقة الحجز. أما تقييم حالتكم وتحديد الإجراء المناسب فيكون ضمن استشارة مدفوعة مع المحامي المختص، تبدأ من {consultation_price} ريال غير شاملة ضريبة القيمة المضافة. هل ترغبون في تنسيق موعد؟", "english": "I can explain the right service and how to book. Assessing your situation and advising on the right step is done in a paid consultation with the specialist lawyer, starting from SAR {consultation_price}, excluding VAT. Would you like us to arrange an appointment?" } ] },
+    "legal_offer_generic": { "kind": "statement", "source": "6.7", "variants": [
+      { "arabic": "أقدر أوضح لكم الخدمة المناسبة وطريقة الحجز. أما تقييم حالتكم وتحديد الإجراء المناسب فيكون ضمن استشارة مدفوعة مع المحامي المختص. هل ترغبون في تنسيق موعد؟", "english": "I can explain the right service and how to book. Assessing your situation and advising on the right step is done in a paid consultation with the specialist lawyer. Would you like us to arrange an appointment?" } ] },
+    "fees_specialty": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "سعر {consultation_name} {consultation_price} ريال غير شاملة ضريبة القيمة المضافة، لمدة 50 دقيقة حضوريًا أو أونلاين مع رأي مكتوب. أما أتعاب التمثيل فيحددها الفريق بعد دراسة الطلب.", "english": "The fee for {consultation_name} is SAR {consultation_price}, excluding VAT: 50 minutes in person or online, with a written opinion. Representation fees are set by the team after reviewing the request." } ] },
+    "fees_specialty_from": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "تبدأ {consultation_name} في مثل هذه النزاعات من {consultation_price} ريال غير شاملة ضريبة القيمة المضافة، وهي قيمة مبدئية يؤكدها الفريق. أما أتعاب التمثيل فيحددها الفريق بعد دراسة الطلب.", "english": "For matters like this, {consultation_name} starts from SAR {consultation_price}, excluding VAT, as an initial figure the team confirms. Representation fees are set by the team after reviewing the request." } ] },
+    "fees_by_team": { "kind": "statement", "source": "3", "variants": [
+      { "arabic": "تُحدد الأتعاب بعد مراجعة المختص.", "english": "Fees are set after the specialist's review." } ] },
+
+    "decline_labor": { "kind": "statement", "source": "6.4", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي التمثيل في هذه المطالبة، ونقدر نخدمكم باستشارة عمالية ({price_labor_consultation} ريالًا) أو بإعداد صحيفة الدعوى أو مذكرة الرد أو الاعتراض على الحكم. تبدأ أتعاب الصياغة العمالية من {price_labor_drafting_from} ريال. جميع الأسعار غير شاملة ضريبة القيمة المضافة، ولا تشمل أي رسوم لطرف ثالث. أي خدمة تفضّلون؟", "english": "Thank you for the details. We are unable to represent you in this claim, but we can help with a labour consultation (SAR {price_labor_consultation}) or by drafting your statement of claim, reply memo or objection to a judgment. Labour drafting starts from SAR {price_labor_drafting_from}. All fees exclude VAT and any third-party fees. Which would you prefer?" } ] },
+    "decline_labor_time": { "kind": "statement", "source": "6.5", "variants": [
+      { "arabic": "شكرًا للتوضيح. قد توجد مسألة تتعلق بمدة قبول المطالبة، لذلك نعتذر مبدئيًا عن تولّي التمثيل. نقدر نرتب لكم استشارة عمالية ({price_labor_consultation} ريالًا غير شاملة ضريبة القيمة المضافة) يدقق فيها المحامي المدة ويوضح خياراتكم. هل ترغبون بالحجز؟", "english": "Thank you. There may be an issue with the time limit for accepting this claim, so we are unable to take on representation at this stage. We can arrange a labour consultation (SAR {price_labor_consultation}, excluding VAT) where a lawyer checks the time limit and explains your options. Would you like to book?" } ] },
+    "decline_commercial": { "kind": "statement", "source": "6.20", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي القضية كاملة، ونقدر نخدمكم بمهام محددة: استشارة تجارية بـ {price_commercial_consultation} ريال، أو رفع دعوى من {price_commercial_filing_from}، أو مذكرة من {price_commercial_memo_from}، أو كتابة اعتراض ورفعه من {price_commercial_objection_from} ريال. جميع الأسعار غير شاملة ضريبة القيمة المضافة، ولا تشمل أي رسوم لطرف ثالث. أي خدمة تفضّلون؟", "english": "Thank you for the details. We are unable to take on the full case, but we can help with specific tasks: a commercial consultation (SAR {price_commercial_consultation}), filing a lawsuit (from SAR {price_commercial_filing_from}), a memo (from SAR {price_commercial_memo_from}), or drafting and filing an objection (from SAR {price_commercial_objection_from}). All fees exclude VAT and any third-party fees. Which would you prefer?" } ] },
+    "decline_commercial_complex": { "kind": "statement", "source": "6.20, A.3", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي القضية كاملة، ونقدر نخدمكم بمهام محددة: استشارة تجارية تبدأ في مثل هذه النزاعات من {price_complex_consultation_from} ريال، وهي قيمة مبدئية تُحدد بدقة بعد معرفة التفاصيل، أو رفع دعوى من {price_commercial_filing_from}، أو مذكرة من {price_commercial_memo_from}، أو كتابة اعتراض ورفعه من {price_commercial_objection_from} ريال. جميع الأسعار غير شاملة ضريبة القيمة المضافة، ولا تشمل أي رسوم لطرف ثالث. أي خدمة تفضّلون؟", "english": "Thank you for the details. We are unable to take on the full case, but we can help with specific tasks: a commercial consultation, which in such disputes starts from SAR {price_complex_consultation_from} as an initial figure confirmed once the details are known, filing a lawsuit (from SAR {price_commercial_filing_from}), a memo (from SAR {price_commercial_memo_from}), or drafting and filing an objection (from SAR {price_commercial_objection_from}). All fees exclude VAT and any third-party fees. Which would you prefer?" } ] },
+    "decline_civil": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي القضية كاملة، ونقدر نخدمكم باستشارة حقوقية بـ {price_civil_consultation} ريال غير شاملة ضريبة القيمة المضافة، يوضح فيها المحامي خياراتكم. هل ترغبون بالحجز؟", "english": "Thank you for the details. We are unable to take on the full case, but we can help with a civil consultation (SAR {price_civil_consultation}, excluding VAT) where a lawyer explains your options. Would you like to book?" } ] },
+    "decline_tax": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي التمثيل في هذا الاعتراض، ونقدر نخدمكم باستشارة ضريبية بـ {price_commercial_consultation} ريال غير شاملة ضريبة القيمة المضافة. هل ترغبون بالحجز؟", "english": "Thank you for the details. We are unable to take on representation in this objection, but we can help with a tax consultation (SAR {price_commercial_consultation}, excluding VAT). Would you like to book?" } ] },
+    "decline_tax_complex": { "kind": "statement", "source": "composed, A.3", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي التمثيل في هذا الاعتراض، ونقدر نخدمكم باستشارة ضريبية تبدأ في مثل هذه المسائل من {price_complex_consultation_from} ريال غير شاملة ضريبة القيمة المضافة، وتُحدد قيمتها بدقة بعد معرفة التفاصيل. هل ترغبون بالحجز؟", "english": "Thank you for the details. We are unable to take on representation in this objection, but we can help with a tax consultation, which for matters like this starts from SAR {price_complex_consultation_from}, excluding VAT, confirmed once the details are known. Would you like to book?" } ] },
+    "q_labor_contract_amount": { "kind": "question", "q": 1, "source": "4.5", "variants": [
+      { "arabic": "كم التعويض المذكور في العقد؟", "english": "How much is the compensation stated in the contract?" } ] },
+    "q_labor_contract_remaining": { "kind": "question", "q": 1, "source": "4.5", "variants": [
+      { "arabic": "كم المدة المتبقية من العقد؟", "english": "How much time is left on the contract?" } ] },
+    "q_judgment_new_evidence": { "kind": "question", "q": 1, "source": "5.9", "variants": [
+      { "arabic": "هل يوجد دليل جديد أو ادعاء تزوير؟", "english": "Is there new evidence, or a claim of forgery?" } ] },
+    "q_crim_city": { "kind": "question", "q": 1, "source": "5.13", "variants": [
+      { "arabic": "في أي مدينة تم التوقيف؟", "english": "In which city is the person being held?" } ] },
+    "q_tm_rejection_date": { "kind": "question", "q": 1, "source": "5.11", "variants": [
+      { "arabic": "متى وصلكم تبليغ الرفض؟", "english": "When were you notified of the refusal?" } ] },
+    "q_contract_purpose_parties": { "kind": "question", "q": 2, "source": "5.7", "variants": [
+      { "arabic": "ما غرض التعاقد وقيمة المشروع التقريبية؟ وما صفة الأطراف؟", "english": "What is the purpose of the contract and the approximate value of the project? And who are the parties?" } ] },
+    "cv_two_fields": { "kind": "question", "q": 1, "source": "5.16", "variants": [
+      { "arabic": "ذكرتم أكثر من مجال. أي مجال تفضّلون تصنيف السيرة الذاتية تحته؟", "english": "You mentioned more than one field. Which field would you prefer your CV to be filed under?" } ] },
+    "cv_pdf": { "kind": "statement", "source": "5.16", "variants": [
+      { "arabic": "نأمل إرسال نسخة واضحة من السيرة الذاتية بصيغة PDF.", "english": "Please send a clear copy of your CV as a PDF." } ] },
+    "admin_consult_independent": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "الاستشارة خدمة مستقلة، وأتعاب التمثيل يحددها الفريق بعد الدراسة.", "english": "The consultation is a separate service, and representation fees are set by the team after reviewing the matter." } ] },
+    "admin_documents_email": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "لإرسال المستندات التي يطلبها الفريق: i-lawyer@alothmanlaw.sa", "english": "To send the documents the team asks for: i-lawyer@alothmanlaw.sa" } ] },
+    "booking_documents": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "سيطلب الفريق المستندات اللازمة للتحضير عبر القناة المعتمدة.", "english": "The team will ask for the documents needed to prepare, through the approved channel." } ] },
+    "decline_enforcement_other": { "kind": "statement", "source": "composed, 2", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي التمثيل في هذا الطلب، ونقدر نخدمكم باستشارة تُحدد أتعابها بعد مراجعة المختص. هل ترغبون بها؟", "english": "Thank you for the details. We are unable to take on representation in this request, but we can help with a consultation; its fees are set after the specialist's review. Would you like one?" } ] },
+    "decline_enforcement": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "نشكر لكم توضيح الطلب. نعتذر عن تولّي التمثيل في هذا الطلب، ونقدر نخدمكم باستشارة بـ {price_commercial_consultation} ريال غير شاملة ضريبة القيمة المضافة. هل ترغبون بالحجز؟", "english": "Thank you for the details. We are unable to take on representation in this request, but we can help with a consultation (SAR {price_commercial_consultation}, excluding VAT). Would you like to book?" } ] },
+    "decline_service": { "kind": "statement", "source": "6.12", "variants": [
+      { "arabic": "نشكر لكم تواصلكم. نعتذر عن تقديم هذه الخدمة حاليًا، ونتمنى لكم التوفيق.", "english": "Thank you for contacting us. We are unable to provide this service at present, and we wish you the best." } ] },
+    "decline_prison_outside": { "kind": "statement", "source": "6.6", "variants": [
+      { "arabic": "نعتذر عن تقديم هذه الخدمة حاليًا لأن السجن خارج نطاق خدماتنا الجغرافي. نشكر لكم تواصلكم ونتمنى لكم التوفيق.", "english": "We are sorry, but we cannot provide this service as the prison is outside our geographical service area. Thank you for reaching out, and we wish you the best." } ] },
+
+    "offer_labor_objection": { "kind": "question", "q": 1, "source": "6.18", "variants": [
+      { "arabic": "نقدر نعدّ لكم مذكرة الاعتراض على الحكم. تبدأ الأتعاب من {price_labor_drafting_from} ريال غير شاملة ضريبة القيمة المضافة، ويحدد الفريق السعر النهائي بعد معرفة المطلوب. الصياغة لا تشمل الإيداع أو الحضور أو أي رسوم لطرف ثالث. ما تاريخ صدور الحكم أو آخر أجل للاعتراض؟", "english": "We can prepare your objection to the judgment. Fees start from SAR {price_labor_drafting_from}, excluding VAT, and the team confirms the final price once the requirements are clear. Drafting does not include filing, attending or any third-party fees. When was the judgment issued, or when is the objection deadline?" } ] },
+    "offer_labor_drafting": { "kind": "question", "q": 1, "source": "6.18", "variants": [
+      { "arabic": "نقدر نعدّ لكم صحيفة الدعوى أو مذكرة الرد. تبدأ الأتعاب من {price_labor_drafting_from} ريال غير شاملة ضريبة القيمة المضافة، ويحدد الفريق السعر النهائي بعد معرفة المطلوب. الصياغة لا تشمل الإيداع أو الحضور أو أي رسوم لطرف ثالث. ما موعد الجلسة أو آخر أجل للرد؟", "english": "We can prepare your statement of claim or reply memo. Fees start from SAR {price_labor_drafting_from}, excluding VAT, and the team confirms the final price once the requirements are clear. Drafting does not include filing, attending or any third-party fees. When is the hearing or reply deadline?" } ] },
+    "offer_commercial_tasks": { "kind": "statement", "source": "6.20", "variants": [
+      { "arabic": "نقدر نخدمكم في خطوات محددة: رفع الدعوى يبدأ من {price_commercial_filing_from} ريال، والمذكرة من {price_commercial_memo_from} ريال، وكتابة الاعتراض ورفعه من {price_commercial_objection_from} ريال. الأسعار غير شاملة ضريبة القيمة المضافة، ولا تشمل أي رسوم لطرف ثالث.", "english": "We can help with a specific step: filing a lawsuit starts from SAR {price_commercial_filing_from}, a memo from SAR {price_commercial_memo_from}, and drafting and filing an objection from SAR {price_commercial_objection_from}. All fees exclude VAT and any third-party fees." } ] },
+    "offer_shares_letter": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "خطاب بيان الأنصبة الشرعية بـ {price_shares_letter} ريال غير شاملة ضريبة القيمة المضافة، ويوضح نصيب كل وارث، ويحتاج صك حصر الورثة.", "english": "A letter stating each heir's share is SAR {price_shares_letter}, excluding VAT, and requires the heirs' deed." } ] },
+    "offer_contract_review": { "kind": "statement", "source": "3.4", "variants": [
+      { "arabic": "مراجعة العقد تبدأ من {price_contract_review_from} ريال غير شاملة ضريبة القيمة المضافة، وتختلف بحسب اللغة وعدد الصفحات ونوع العقد، ويحدد الفريق السعر بدقة بعد معرفة التفاصيل.", "english": "A contract review starts from SAR {price_contract_review_from}, excluding VAT, and depends on the language, number of pages and type of contract; the team confirms the exact price once the details are known." } ] },
+    "offer_contract_drafting": { "kind": "statement", "source": "5.7", "variants": [
+      { "arabic": "صياغة العقد بعرض سعر من الفريق بعد معرفة التفاصيل، ولا تشمل أي رسوم لطرف ثالث.", "english": "Contract drafting is priced by our team once the details are known, and excludes any third-party fees." } ] },
+    "offer_tm_registration": { "kind": "statement", "source": "3.4", "variants": [
+      { "arabic": "تسجيل العلامة التجارية بـ {price_trademark_registration} ريال غير شاملة ضريبة القيمة المضافة، والرسوم الحكومية تُدفع منفصلة وهي نحو {price_trademark_gov_fees_approx} ريال.", "english": "Trademark registration is SAR {price_trademark_registration}, excluding VAT; government fees are paid separately and are about SAR {price_trademark_gov_fees_approx}." } ] },
+    "offer_tm_objection": { "kind": "statement", "source": "3.4", "variants": [
+      { "arabic": "الاعتراض أو متابعة طلب العلامة يبدأ من {price_trademark_objection_from} ريال غير شاملة ضريبة القيمة المضافة ولا أي رسوم لطرف ثالث.", "english": "An objection or a follow-up on a trademark application starts from SAR {price_trademark_objection_from}, excluding VAT and any third-party fees." } ] },
+    "offer_patent_stages": { "kind": "statement", "source": "3.5", "variants": [
+      { "arabic": "طلب براءة الاختراع على ثلاث مراحل: الفحص والاستشارة {price_patent_stage1} ريال، ثم صياغة الطلب وتقديمه {price_patent_stage2} ريال، ثم المتابعة حتى صدور البراءة {price_patent_stage3} ريال، والإجمالي {price_patent_total} ريال. جميع المبالغ غير شاملة ضريبة القيمة المضافة، والرسوم الحكومية منفصلة، وتبدؤون بالمرحلة الأولى فقط.", "english": "A patent application runs in three stages: examination and consultation (SAR {price_patent_stage1}), drafting and filing the application (SAR {price_patent_stage2}), and follow-up until the patent is granted (SAR {price_patent_stage3}), SAR {price_patent_total} in total. All amounts exclude VAT, government fees are separate, and you start with the first stage only." } ] },
+    "offer_pr_stages": { "kind": "statement", "source": "3.5", "variants": [
+      { "arabic": "طلب الإقامة المميزة على ثلاث مراحل: الفحص والتقييم {price_pr_stage1} ريال، ثم البدء في الطلب {price_pr_stage2} ريال، ثم إنهاء الطلب واستلام الإقامة {price_pr_stage3} ريال، والإجمالي {price_pr_total} ريال. جميع المبالغ غير شاملة ضريبة القيمة المضافة، والرسوم الحكومية منفصلة، وتبدؤون بالمرحلة الأولى فقط.", "english": "A Premium Residency application runs in three stages: examination and assessment (SAR {price_pr_stage1}), starting the application (SAR {price_pr_stage2}), and completing it and receiving the residency (SAR {price_pr_stage3}), SAR {price_pr_total} in total. All amounts exclude VAT, government fees are separate, and you start with the first stage only." } ] },
+    "offer_fdi_stages": { "kind": "statement", "source": "3.5", "variants": [
+      { "arabic": "تأسيس الاستثمار الأجنبي على ثلاث مراحل: الفحص وتحديد الهيكل والنشاط {price_fdi_stage1} ريال، ثم ما قبل تقديم الطلب {price_fdi_stage2} ريال، ثم ما بعد استكمال الطلب {price_fdi_stage3} ريال، والإجمالي {price_fdi_total} ريال. جميع المبالغ غير شاملة ضريبة القيمة المضافة، والرسوم الحكومية منفصلة، وتبدؤون بالمرحلة الأولى فقط.", "english": "Setting up a foreign investment runs in three stages: examination and defining the structure and activity (SAR {price_fdi_stage1}), the work before filing (SAR {price_fdi_stage2}), and the work after the application is complete (SAR {price_fdi_stage3}), SAR {price_fdi_total} in total. All amounts exclude VAT, government fees are separate, and you start with the first stage only." } ] },
+    "offer_company_formation": { "kind": "statement", "source": "3.4", "variants": [
+      { "arabic": "تأسيس شركة لمالك سعودي بـ {price_company_formation} ريال غير شاملة ضريبة القيمة المضافة، ويشمل عقد التأسيس وفتح الملفات في مكتب العمل والتأمينات الاجتماعية وقوى وهيئة الزكاة والضريبة والجمارك.", "english": "Forming a company for a Saudi owner is SAR {price_company_formation}, excluding VAT, and covers the articles of association and opening the files at the labour office, social insurance, Qiwa and ZATCA." } ] },
+    "offer_articles_amendment": { "kind": "statement", "source": "3.4", "variants": [
+      { "arabic": "تعديل عقد التأسيس يبدأ من {price_articles_amendment_from} ريال غير شاملة ضريبة القيمة المضافة ولا أي رسوم لطرف ثالث، ويحدد الفريق السعر بدقة بعد معرفة التفاصيل.", "english": "Amending the articles of association starts from SAR {price_articles_amendment_from}, excluding VAT and any third-party fees; the team confirms the exact price once the details are known." } ] },
+    "offer_notarization": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "توثيق المستند أمام كاتب العدل في المكتب، حضوريًا أو أونلاين، بـ {price_notarization} ريال للمستند الواحد غير شاملة ضريبة القيمة المضافة.", "english": "Notarizing a document before the notary public at the office, in person or online, is SAR {price_notarization} per document, excluding VAT." } ] },
+    "offer_detainee_inquiry": { "kind": "statement", "source": "5.13", "variants": [
+      { "arabic": "نقدر نخدمكم بخدمة الاستعلام بـ {price_detainee_inquiry} ريال غير شاملة ضريبة القيمة المضافة.", "english": "We can help with our inquiry service, for SAR {price_detainee_inquiry}, excluding VAT." } ] },
+    "offer_quote": { "kind": "statement", "source": "3", "variants": [
+      { "arabic": "هذه الخدمة بعرض سعر من الفريق بعد معرفة التفاصيل.", "english": "This service is priced by our team once the details are known." } ] },
+    "offer_quote_consult": { "kind": "statement", "source": "composed, 2, 3", "variants": [
+      { "arabic": "هذه الخدمة بعرض سعر من الفريق بعد معرفة التفاصيل. وإن رغبتم باستشارة مع المحامي المختص قبل ذلك فهي بـ {consultation_price} ريال غير شاملة ضريبة القيمة المضافة.", "english": "This service is priced by our team once the details are known. If you would like a consultation with the specialist lawyer first, it is SAR {consultation_price}, excluding VAT." } ] },
+
+    "marketing": { "kind": "statement", "source": "6.15", "variants": [
+      { "arabic": "شكرًا لتواصلكم. هذا الرقم مخصص لخدمة العملاء، ونعتذر عن المضي في العروض التسويقية عبره.", "english": "Thank you for reaching out. This number is for client services, so we are unable to take marketing offers here." } ] },
+    "discount_declined": { "kind": "statement", "source": "3.3", "variants": [
+      { "arabic": "نقدّر طلبكم، ونعتذر لعدم توفر خصم أو تقسيط.", "english": "We appreciate your request; we are sorry, but we cannot offer a discount or instalments." } ] },
+    "discount": { "kind": "statement", "source": "6.16", "variants": [
+      { "arabic": "نقدّر طلبكم. سأحيل ملاحظتكم للفريق المختص، وهو من يقرر في الأتعاب.", "english": "We appreciate your request. I will pass it to the team, who decide on fees." } ] },
+    "sensitive_warning": { "kind": "statement", "source": "1.5", "variants": [
+      { "arabic": "للأمان، نرجو عدم إرسال رموز التحقق لأي أحد.", "english": "For your safety, please don't send verification codes to anyone." } ] },
+    "media_unclear": { "kind": "question", "q": 1, "source": "6.17", "variants": [
+      { "arabic": "شكرًا لكم. نأمل كتابة ملخص قصير في سطرين: ما الموضوع، وما المطلوب منا؟", "english": "Thank you. Could you please write a short summary in two lines: what the matter is and what you need from us?" } ] },
+    "explain_question": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "المعذرة، نوضّح لكم السؤال.", "english": "Sorry for the confusion, let us put the question more clearly." } ] },
+    "subject_again": { "kind": "question", "q": 1, "source": "composed", "variants": [
+      { "arabic": "تفضلوا، اكتبوا لنا موضوع طلبكم باختصار لنكمل معكم.", "english": "Please tell us briefly what your matter is about, so we can continue with you." } ] },
+    "clarify": { "kind": "question", "q": 1, "source": "composed", "variants": [
+      { "arabic": "لم تتضح لنا الصورة تمامًا. نأمل توضيح الموضوع والمطلوب منا باختصار.", "english": "We didn't quite follow. Could you briefly explain the matter and what you need from us?" } ] },
+
+    "cv_unclear": { "kind": "question", "q": 1, "source": "5.16", "variants": [
+      { "arabic": "هل ترغبون في إرسال سيرتكم الذاتية للتوظيف مستقبلًا، أو الاستفسار عن التدريب؟", "english": "Would you like to send your CV for future employment, or are you asking about training?" } ] },
+    "cv_job": { "kind": "statement", "source": "5.16", "variants": [
+      { "arabic": "لا توجد شواغر حاليًا، ويسعدنا استقبال سيرتكم الذاتية للرجوع إليها عند وجود احتياج مناسب. فضلًا أرسلوا السيرة الذاتية، واذكروا المجال الذي ترغبون بالعمل فيه، ومدينتكم، وعدد سنوات خبرتكم في هذا المجال إن وجدت.", "english": "There are no vacancies at the moment, but we are happy to keep your CV on file for any suitable future need. Please send your CV and mention the field you would like to work in, your city, and your years of experience in that field, if any." } ] },
+    "cv_training": { "kind": "statement", "source": "5.16", "variants": [
+      { "arabic": "فضلًا أرسلوا الاسم والتخصص، وأرفقوا السيرة الذاتية إن كانت متوفرة. سنتواصل معكم في حال توفر فرصة تدريب مناسبة.", "english": "Please send your name, major, university, the type of training you need, and the preferred start date and duration. Attach your CV if available. We will contact you if a suitable training opportunity becomes available." } ] },
+    "cv_noted": { "kind": "statement", "source": "5.16", "variants": [
+      { "arabic": "شكرًا لكم، وصلتنا بياناتكم. سنتواصل معكم في حال وجود احتياج أو فرصة مناسبة.", "english": "Thank you, we have received your details. We will contact you if a suitable need or opportunity arises." } ] },
+    "cv_received": { "kind": "statement", "source": "5.16", "variants": [
+      { "arabic": "شكرًا لكم، تم استلام السيرة الذاتية. سنتواصل معكم في حال وجود احتياج يتناسب مع مجالكم وخبرتكم.", "english": "Thank you, we have received your CV. We will contact you if there is a need that matches your field and experience." } ] },
+
+    "admin_hours": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "ساعات العمل: {working_hours}.", "english": "Our working hours are {working_hours}." } ] },
+    "admin_address": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "موقعنا: {address}.", "english": "We're located at {address}." } ] },
+    "admin_contact": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "للتواصل: {contact_info}.", "english": "You can reach us at {contact_info}." } ] },
+    "admin_website": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "موقعنا الإلكتروني: {website}", "english": "Our website: {website}" } ] },
+    "admin_payment": { "kind": "statement", "source": "A.19", "variants": [
+      { "arabic": "طرق الدفع: تحويل بنكي محلي أو دولي يتحمل فيه العميل أي رسوم تحويل أو ضريبة، أو نقاط البيع في المكتب، أو بوابة الدفع الإلكترونية أو باي بال لمن هم خارج المملكة. يرسل الفريق تفاصيل الدفع بعد تأكيد الموعد، ولا يوجد خصم أو تقسيط.", "english": "Payment can be made by local or international bank transfer (any transfer fees or taxes are on the client), at the office's card terminal, or by online payment gateway or PayPal for clients outside Saudi Arabia. The team sends the payment details after confirming the appointment; there are no discounts or instalments." } ] },
+    "admin_offices": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "للمكتب حضور خارج المملكة: {other_offices}.", "english": "The firm also has a presence abroad: {other_offices}." } ] },
+    "admin_credentials": { "kind": "statement", "source": "1.8", "variants": [
+      { "arabic": "من اعتمادات المكتب: {award}.", "english": "Among the firm's recognitions: {award}." } ] },
+    "admin_services": { "kind": "statement", "source": "2", "variants": [
+      { "arabic": "يقدم المكتب: {services_list}.", "english": "The firm handles {services_list}." } ] },
+    "admin_service_yes": { "kind": "statement", "source": "2", "variants": [
+      { "arabic": "نعم، يقدم المكتب {service_name}.", "english": "Yes, the firm handles {service_name}." } ] },
+    "admin_fees": { "kind": "statement", "source": "3.1", "variants": [
+      { "arabic": "بخصوص الأتعاب: {price_info}.", "english": "Regarding fees: {price_info}." } ] },
+    "no_approved_answer": { "kind": "statement", "source": "1.5", "variants": [
+      { "arabic": "هذه المعلومة يفيدكم بها الفريق المختص، وسأحيل سؤالكم إليه.", "english": "Our team is best placed to answer that; I will pass your question on." } ] },
+
+    "deferral_reply": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "في خدمتكم دائمًا.", "english": "Happy to help." } ] },
+    "thanks_reply": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "العفو، حياكم الله.", "english": "You're welcome." },
+      { "arabic": "في خدمتكم دائمًا.", "english": "Happy to help." } ] },
+    "goodbye_reply": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "في أمان الله.", "english": "Take care." } ] },
+    "waiting": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "طلبكم لدى الفريق المختص، وسيتواصل معكم عبر هذا الرقم.", "english": "Your request is with our team, and they will contact you on this number." },
+      { "arabic": "طلبكم مسجل لدينا، والفريق سيتواصل معكم.", "english": "Your request is logged, and our team will be in touch." } ] },
+    "returning": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "حياكم الله مجددًا. أُبلغ الفريق المسؤول بتواصلكم.", "english": "Welcome back. I'll let the responsible team know you got in touch." } ] },
+    "wrong_number": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "هذا رقم {office_name}.", "english": "This is {office_name}." } ] },
+    "delivery": { "kind": "statement", "source": "composed", "variants": [
+      { "arabic": "حياكم الله، أُبلغ الفريق في المكتب.", "english": "Welcome; I'll let the office team know." } ] },
+    "doc_received": { "kind": "statement", "source": "1.9", "variants": [
+      { "arabic": "وصلنا الملف، وسيطّلع عليه الفريق المختص.", "english": "We received the file; our team will review it." } ] },
+    "image_received": { "kind": "statement", "source": "1.9", "variants": [
+      { "arabic": "وصلتنا الصورة، وسيطّلع عليها الفريق المختص.", "english": "We received the picture; our team will review it." } ] },
+
+    "need_name": { "kind": "fragment", "source": "6.8", "variants": [
+      { "arabic": "الاسم الكامل", "english": "your full name" } ] },
+    "need_topic": { "kind": "fragment", "source": "6.8", "variants": [
+      { "arabic": "موضوع الاستشارة باختصار", "english": "a short summary of the topic" } ] },
+    "need_format": { "kind": "fragment", "source": "6.8", "variants": [
+      { "arabic": "الطريقة المفضلة ({consultation_formats})", "english": "your preferred format ({consultation_formats})" } ] },
+    "need_time": { "kind": "fragment", "source": "6.8", "variants": [
+      { "arabic": "الوقت المناسب", "english": "a suitable time" } ] },
+    "format_standard": { "kind": "fragment", "source": "A.4", "variants": [
+      { "arabic": "حضوري في الرياض أو أونلاين", "english": "in-office in Riyadh or online" } ] },
+    "format_with_phone": { "kind": "fragment", "source": "A.3", "variants": [
+      { "arabic": "حضوري في الرياض أو أونلاين، أو هاتفية بـ {price_phone_consultation} ريال غير شاملة ضريبة القيمة المضافة، 30 دقيقة بلا رأي مكتوب", "english": "in-office in Riyadh or online, or by phone for SAR {price_phone_consultation} excluding VAT, 30 minutes without a written opinion" } ] }
+  }
+}

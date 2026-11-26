@@ -1,0 +1,37 @@
+# A trial on one machine with a test number (deploy/README.md, «تجربة على رقم تجريبي»):
+# Evolution API, pinned to the version tried here, with its own database. Nothing is published
+# beyond this machine: Evolution answers on 127.0.0.1:8080 only, and the database on no port.
+#
+#   node scripts/trial-setup.js      writes evolution.env beside this file (keys made here, never printed)
+#   docker compose -f deploy/trial/docker-compose.yml up -d
+name: elmaster-trial
+services:
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+    env_file: evolution.env
+    # The assistant's server runs on the machine itself, outside Docker: the webhook reaches it
+    # at http://host.docker.internal:3210/webhooks/evolution.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - evolution_instances:/evolution/instances
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    env_file: evolution.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - evolution_db:/var/lib/postgresql/data
+volumes:
+  evolution_instances:
+  evolution_db:

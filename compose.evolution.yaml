@@ -1,0 +1,29 @@
+name: osman-whatsapp
+services:
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    env_file: .local/evolution.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - instances:/evolution/instances
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    env_file: .local/evolution.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - database:/var/lib/postgresql/data
+volumes:
+  instances:
+  database:

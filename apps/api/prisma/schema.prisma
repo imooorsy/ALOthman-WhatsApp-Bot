@@ -57,6 +57,7 @@ model Conversation {
  assignedStaff StaffUser? @relation(fields:[assignedStaffId],references:[id])
  category String?
  summary String?
+ agentState Json?
  urgentReason String?
  unreadCount Int @default(0)
  lastClientMessageAt DateTime @default(now())
