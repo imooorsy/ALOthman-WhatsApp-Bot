@@ -2,11 +2,11 @@
 
 Repository preparation is complete for a Render deployment. This document does not mean resources have already been created or that production DNS, credentials and acceptance tests have passed. The chosen addresses are:
 
-| Purpose | Address |
-| --- | --- |
-| Staff dashboard | https://osman.alothmanlaw.sa |
-| Dashboard API and callbacks | https://osman-api.alothmanlaw.sa |
-| WhatsApp connector | Private Render service; no public login or manager |
+| Purpose                     | Address                                            |
+| --------------------------- | -------------------------------------------------- |
+| Staff dashboard             | https://osman.alothmanlaw.sa                       |
+| Dashboard API and callbacks | https://osman-api.alothmanlaw.sa                   |
+| WhatsApp connector          | Private Render service; no public login or manager |
 
 ## What the Blueprint creates
 
@@ -18,7 +18,7 @@ The API and connector each remain at one instance. The API uses its in-memory So
 
 1. Push the committed project to your connected Git repository, then create a Render Blueprint from render.yaml. Choose the production branch. Use a private repository if required by the office's source-access policy. No local .env, .local, backups or client records belong in that repository.
 2. Render prompts for OPENROUTER_API_KEY, a new SEED_ADMIN_EMAIL and a strong SEED_ADMIN_PASSWORD of at least 12 characters. JWT_SECRET, the Evolution API key and webhook secret are generated. Do not copy local test logins or JWT/connector secrets into production.
-3. Supply the web's NEXT_PUBLIC_FIREBASE_* values, including the VAPID public key, from the existing Firebase web app. These are public SDK settings. Upload the private server service-account JSON as an **osman-api Secret File** named `firebase-service-account.json`, available at `/etc/secrets/firebase-service-account.json`. Never use a NEXT_PUBLIC variable for its contents. Firebase is configured separately from dashboard cookie authentication. If browser-referrer restrictions exist on the public Firebase API key, allow the dashboard's new HTTPS origin.
+3. Supply the web's `NEXT_PUBLIC_FIREBASE_*` values, including the VAPID public key, from the existing Firebase web app. These are public SDK settings. Upload the private server service-account JSON as an **osman-api Secret File** named `firebase-service-account.json`, available at `/etc/secrets/firebase-service-account.json`. Never use a NEXT_PUBLIC variable for its contents. Firebase is configured separately from dashboard cookie authentication. If browser-referrer restrictions exist on the public Firebase API key, allow the dashboard's new HTTPS origin.
 4. The API pre-deploy command runs `pnpm db:migrate`. Its initial-deploy hook runs `pnpm seed` once, creating only the admin, settings, services and categories—no sample clients/chats. The production seed starts the bot paused. Existing records are not overwritten on a repeat seed. If the initial hook needs rerunning, use `pnpm seed` in the API Render shell from the repository root, then remove SEED_ADMIN_PASSWORD after successful initialization.
 5. If moving an existing Render service from the old mock Blueprint, verify all updated environment variables explicitly in Render; the new values select evolution/inprocess mode. Confirm the migrations, hook and build finished. Public Firebase variables are compiled at build time: redeploy the web service after changing them. Do not deploy the Python placeholder agent or start the engineer's independent server.
 
