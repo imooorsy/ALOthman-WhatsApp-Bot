@@ -2,8 +2,9 @@ import fs from "node:fs/promises";
 import YAML from "yaml";
 import Ajv from "ajv/dist/2020.js";
 async function main() {
+  const blueprintPath = process.argv[2] || new URL("../render.yaml", import.meta.url);
   const blueprint = YAML.parse(
-    await fs.readFile(new URL("../render.yaml", import.meta.url), "utf8"),
+    await fs.readFile(blueprintPath, "utf8"),
     { uniqueKeys: true },
   );
   const response = await fetch("https://render.com/schema/render.yaml.json", {

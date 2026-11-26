@@ -1,11 +1,11 @@
 # Production QR stack. Reference: https://render.com/docs/blueprint-spec
-# Paid, always-on services; API and paired connector each remain single-instance.
+# Cost-controlled starting profile. API and connector remain always-on/single-instance.
 services:
   - type: web
     name: osman-web
     runtime: node
     region: frankfurt
-    plan: 1c-2g
+    plan: 0.5c-512mb
     numInstances: 1
     domains: [osman.alothmanlaw.sa]
     buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm --filter @osman/shared build && pnpm --filter @osman/web build
@@ -36,7 +36,7 @@ services:
     name: osman-api
     runtime: node
     region: frankfurt
-    plan: 1c-2g
+    plan: 0.5c-512mb
     numInstances: 1
     domains: [osman-api.alothmanlaw.sa]
     maxShutdownDelaySeconds: 120
@@ -120,7 +120,7 @@ services:
     disk:
       name: whatsapp-pairing
       mountPath: /evolution/instances
-      sizeGB: 5
+      sizeGB: 1
     envVars:
       - key: PORT
         value: "8080"
@@ -180,13 +180,15 @@ services:
 databases:
   - name: osman-db
     region: frankfurt
-    plan: 0.5c-1g
+    plan: 0.1c-256mb
+    diskSizeGB: 1
     databaseName: osman
     user: osman
     ipAllowList: []
   - name: osman-whatsapp-db
     region: frankfurt
-    plan: 0.5c-1g
+    plan: 0.1c-256mb
+    diskSizeGB: 1
     databaseName: evolution
     user: evolution
     ipAllowList: []

@@ -46,6 +46,8 @@ For a running local API, `node scripts/smoke-m1.mjs`, `node scripts/smoke-m2.mjs
 
 ## Render deployment
 
+Cost-controlled defaults and an optional external Neon Blueprint are available. See [Neon setup and cost comparison](docs/NEON_DEPLOYMENT.md) before choosing: the always-on queue can exceed Neon's free compute quota.
+
 Follow [RENDER_DEPLOYMENT.md](docs/RENDER_DEPLOYMENT.md). The prepared addresses are **osman.alothmanlaw.sa** (dashboard) and **osman-api.alothmanlaw.sa** (API). The Blueprint includes paid web/API services, a private Evolution 2.3.8 connector, two private-access PostgreSQL databases and persistent pairing storage. The delivered Node agent runs inside the API. Run `pnpm check:render` for official JSON Schema validation; actual provisioning, DNS and account checks still happen on Render. No cloud resources were created by this repository change.
 
 Enter the prompted production model/admin/Firebase values, upload the API's Firebase secret file, add the two DNS records Render supplies, and wait for HTTPS. Migrations run before deploy; the initial seed creates the admin and starts the bot paused. After login, an admin connects the business phone in **Settings → ربط واتساب المكتب**. QR images are authenticated, admin-only, short-lived and never placed on the public login page. Employees see connection status only. An already-connected session is preserved across dashboard visits, normal restarts and redeploys using its persistent storage.
