@@ -12,6 +12,8 @@ docker compose -f compose.evolution.yaml up -d
 node scripts/whatsapp-link.mjs
 ```
 
+The linking script waits for Evolution to finish starting before its first authenticated read. A Docker container marked Started may still be running migrations; the compose health check reports readiness separately. To wait explicitly, use `docker compose -f compose.evolution.yaml up -d --wait --wait-timeout 180`. If a later connection drops, rerun the link command; mutations are not automatically replayed.
+
 Setup is idempotent and has already been run locally. It generates random private keys in ignored `.local/evolution.env` and `apps/api/.env`. It keeps existing model/WhatsApp modes. The compose file pins the same Evolution v2.3.7 release as the engineer's trial setup, binds port 8080 to localhost, and persists the linked session and an independent connector PostgreSQL database. Docker pulls the images on first run. Wait for the connector to become available before running the link script. `docker compose -f compose.evolution.yaml ps` shows its state.
 
 The link script creates the `osman` instance, subscribes to MESSAGES_UPSERT and MESSAGES_UPDATE, installs an authenticated webhook and refreshes `.local/whatsapp-qr.png` for up to two minutes. Open that image from Explorer while the script runs. On the phone containing the number to connect, choose **WhatsApp → Linked devices → Link a device**, then scan the image. The script reports connected and removes the QR image; if it times out, rerun for a fresh code. It does not print API secrets/pairing codes or send messages. Treat the QR as a login credential and do not share it.

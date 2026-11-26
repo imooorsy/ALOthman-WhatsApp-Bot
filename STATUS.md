@@ -92,3 +92,9 @@
 - Added local Docker compose and idempotent setup/QR scripts; generated ignored connector secrets. Docker Compose configuration and script syntax validate. Evolution has not been started or paired; no real WhatsApp message has been sent. Full setup steps: docs/WHATSAPP_QR.md.
 - At the user's request, apps/api/.env now selects inprocess mode, the delivered adapter, MODEL_PROVIDER=openrouter and OPENROUTER_MODEL=openai/gpt-6-luna. This model is named in the engineer's comments and verified against OpenRouter's current listing. OPENROUTER_API_KEY is an empty field for the user to fill. WA_PROVIDER remains mock. A key plus API restart is required before real agent replies; QR scan and switching WA_PROVIDER are required for real WhatsApp.
 - Workspace typecheck and API build pass. All 84 Jest tests pass, including a two-turn PostgreSQL memory test and existing webhook/queue/socket e2e. Native Node AgentService dynamic import -> delivered adapter -> provider fixture -> shared validation also passed. Real model policy acceptance and a paired-phone test remain pending credentials/user QR scan.
+
+## Evolution first-start recovery
+- The first link attempt reached the container before its HTTP service finished starting, causing UND_ERR_SOCKET. Confirmed that the running service subsequently returned HTTP 200.
+- Added an initial read-only readiness wait and actionable, sanitized CLI errors. Mutations are never automatically retried. Added a container HTTP health check and documented Compose --wait.
+- Found that the pinned Evolution build returns 404 for a filtered lookup of an instance that does not yet exist. First-time linking now lists instances and selects locally instead; the authenticated unfiltered request returned HTTP 200.
+- Four readiness regression tests, script syntax validation, Compose config validation and workspace typecheck passed. No WhatsApp messages were sent.
