@@ -20,6 +20,28 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     await this.boss.start();
     await this.boss.createQueue("conversation");
     await this.boss.createQueue("whatsapp.inbox");
+    await this.boss.createQueue("push.send");
+  }
+  async push(
+    deliveryId: string,
+    startAfter: Date,
+    tx: Prisma.TransactionClient,
+  ) {
+    return this.boss.send(
+      "push.send",
+      { deliveryId },
+      {
+        startAfter,
+        retryLimit: 3,
+        retryDelay: 2,
+        expireInSeconds: 30,
+        db: {
+          executeSql: async (sql: string, values: unknown[]) => ({
+            rows: (await tx.$queryRawUnsafe(sql, ...values)) as object[],
+          }),
+        },
+      },
+    );
   }
   async inbox(id: string, tx: Prisma.TransactionClient) {
     return this.boss.send(

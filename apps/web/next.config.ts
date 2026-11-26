@@ -5,8 +5,9 @@ const apiOrigin = new URL(
 const socketOrigin = apiOrigin.replace(/^http/, "ws");
 const policy = [
   "default-src 'self'",
-  `connect-src 'self' ${apiOrigin} ${socketOrigin}`,
-  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+  `connect-src 'self' ${apiOrigin} ${socketOrigin} https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://fcm.googleapis.com`,
+  `script-src 'self' https://www.gstatic.com/firebasejs/13.4.0/ 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+  "worker-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data:",

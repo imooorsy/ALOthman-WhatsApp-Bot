@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Param, Req, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Req,
+  UseGuards,
+  Logger,
+} from "@nestjs/common";
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -8,6 +16,7 @@ import { Server } from "socket.io";
 import { events } from "@osman/shared";
 import { AuthGuard, AuthRequest } from "./auth";
 import { Db } from "./db";
+import { PushService } from "./push";
 @WebSocketGateway({
   cors: {
     origin: (process.env.WEB_ORIGINS || "http://localhost:3000").split(","),
@@ -16,10 +25,12 @@ import { Db } from "./db";
   transports: ["websocket"],
 })
 export class RealtimeGateway implements OnGatewayInit {
+  private log = new Logger(RealtimeGateway.name);
   @WebSocketServer() server!: Server;
   constructor(
     private auth: AuthGuard,
     private db: Db,
+    private push: PushService,
   ) {}
   afterInit(server: Server) {
     server.use(async (socket, next) => {
@@ -68,6 +79,12 @@ export class RealtimeGateway implements OnGatewayInit {
     });
     if (notification)
       this.server?.to("staff").emit(event, { conversationId, notification });
+    if (notification)
+      await this.push
+        .enqueueNotification(notificationId)
+        .catch(() =>
+          this.log.error("Could not enqueue background notification"),
+        );
   }
   settings(paused: boolean) {
     this.server?.to("staff").emit(events.settings, { paused });

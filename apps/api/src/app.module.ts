@@ -1,4 +1,5 @@
 import { RealtimeGateway, NotificationsController } from "./realtime";
+import { PushService, PushWorker, PushController } from "./push";
 import { QueueService } from "./queue";
 import { ConversationWorker } from "./worker";
 import { WebhookController, InternalController } from "./webhook";
@@ -60,6 +61,7 @@ class HealthController {
     WebhookController,
     InternalController,
     NotificationsController,
+    PushController,
   ],
   providers: [
     Db,
@@ -72,6 +74,8 @@ class HealthController {
     QueueService,
     ConversationWorker,
     RealtimeGateway,
+    PushService,
+    PushWorker,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

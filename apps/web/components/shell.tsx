@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { OfficeConfig, Staff } from "@osman/shared";
 import { api } from "./api";
 import { Alerts } from "./alerts";
+import { removeFirebasePush } from "./push-client";
 export function Shell({ children }: { children: React.ReactNode }) {
   const [badge, setBadge] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
@@ -105,11 +106,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <p>{user?.name}</p>
           <button
             className="btn logout"
-            onClick={() =>
-              api("/auth/logout", { method: "POST" }).then(() =>
-                window.location.assign("/login"),
-              )
-            }
+            onClick={async () => {
+              try {
+                await removeFirebasePush();
+              } catch {
+                /* Complete sign-out even if a browser registration expired. */
+              }
+              await api("/auth/logout", { method: "POST" });
+              window.location.assign("/login");
+            }}
             title="تسجيل الخروج"
           >
             خروج

@@ -5,6 +5,11 @@ import { io } from "socket.io-client";
 import { Chat, Staff, StaffNotification, events } from "@osman/shared";
 import { API, api } from "./api";
 import {
+  enableFirebasePush,
+  listenFirebaseMessages,
+  removeFirebasePush,
+} from "./push-client";
+import {
   createTestDesktopNotification,
   desktopNotificationOptions,
 } from "./notification-options";
@@ -30,6 +35,7 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
   const [hint, setHint] = useState("");
   const [connected, setConnected] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const [pushReady, setPushReady] = useState(false);
   const prefs = useRef<Staff["notifyPrefs"]>({
     sound: true,
     desktop: false,
@@ -53,6 +59,83 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
     let alive = true;
     let prefsChanged = false;
     const localDesktop = new Map<string, Notification>();
+    let stopFirebase: (() => void) | undefined;
+    let connectingPush = false;
+    let activeStaffId: string | undefined;
+    const seenPush = new Set<string>();
+    async function connectPush() {
+      if (connectingPush) return;
+      connectingPush = true;
+      try {
+        await enableFirebasePush();
+        if (!alive) return;
+        if (!stopFirebase)
+          stopFirebase = await listenFirebaseMessages((payload) => {
+            const data = payload.data;
+            if (
+              !data?.deliveryId ||
+              seenPush.has(data.deliveryId) ||
+              !prefs.current.desktop ||
+              Number(data.expiresAt) < Date.now()
+            )
+              return;
+            if (!activeStaffId || data.staffId !== activeStaffId) return;
+            seenPush.add(data.deliveryId);
+            if (data.kind === "test") {
+              if (prefs.current.sound) sound(false, prefs.current.volume);
+              if (
+                "Notification" in window &&
+                Notification.permission === "granted"
+              ) {
+                try {
+                  const desktop = new Notification(
+                    data.title || "اختبار الإشعارات",
+                    desktopNotificationOptions(
+                      data.body || "إشعار تجريبي",
+                      "firebase-test-" + data.deliveryId,
+                    ),
+                  );
+                  localDesktop.set("firebase-test-" + data.deliveryId, desktop);
+                  desktop.onclick = () => {
+                    window.focus();
+                    desktop.close();
+                  };
+                } catch {
+                  setHint("تعذر عرض إشعار اختبار Firebase");
+                }
+              }
+            } else if (data.notificationId) {
+              void api<StaffNotification[]>("/notifications")
+                .then((rows) => {
+                  const n = rows.find((row) => row.id === data.notificationId);
+                  if (n)
+                    receive(
+                      { conversationId: n.conversationId, notification: n },
+                      true,
+                    );
+                })
+                .catch(() => {});
+            }
+          });
+        if (!alive) {
+          stopFirebase?.();
+          return;
+        }
+        setPushReady(true);
+        setHint("تم تفعيل إشعارات الخلفية؛ يمكنك إغلاق تبويب اللوحة.");
+      } catch (error) {
+        if (alive) {
+          setPushReady(false);
+          setHint(
+            error instanceof Error
+              ? error.message
+              : "تعذر تفعيل إشعارات الخلفية",
+          );
+        }
+      } finally {
+        connectingPush = false;
+      }
+    }
     async function fetchMissed() {
       try {
         const rows = await api<StaffNotification[]>("/notifications");
@@ -163,15 +246,30 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
     });
     api<Staff>("/auth/me")
       .then((u) => {
+        activeStaffId = u.id;
         if (!prefsChanged) prefs.current = u.notifyPrefs;
+        if (
+          prefs.current.desktop &&
+          "Notification" in window &&
+          Notification.permission === "granted"
+        )
+          void connectPush();
       })
       .catch(() => {});
     void fetchMissed();
     const prefHandler = (e: Event) => {
       prefsChanged = true;
       prefs.current = (e as CustomEvent<Staff["notifyPrefs"]>).detail;
+      if (!prefs.current.desktop) {
+        setPushReady(false);
+        void removeFirebasePush().catch(() => {});
+      }
     };
     window.addEventListener("osman:prefs", prefHandler);
+    const enablePush = () => {
+      void connectPush();
+    };
+    window.addEventListener("osman:enable-push", enablePush);
     async function testDesktop() {
       if (prefs.current.sound) {
         try {
@@ -252,6 +350,8 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
       window.removeEventListener("focus", markOpen);
       document.removeEventListener("visibilitychange", markOpen);
       window.removeEventListener("osman:prefs", prefHandler);
+      window.removeEventListener("osman:enable-push", enablePush);
+      stopFirebase?.();
       window.removeEventListener("osman:test-notification", test);
       for (const n of localDesktop.values()) n.close();
     };
@@ -279,7 +379,8 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
             method: "PUT",
             body: JSON.stringify(prefs.current),
           });
-          setHint("تم تفعيل الإشعارات");
+          setHint("تم تفعيل إشعارات سطح المكتب؛ جارٍ تسجيل إشعارات الخلفية…");
+          window.dispatchEvent(new Event("osman:enable-push"));
         } else {
           setEnabled(false);
           setHint("لم تُمنح صلاحية سطح المكتب. يمكنك المحاولة مجددًا.");
@@ -309,6 +410,16 @@ export function Alerts({ onBadge }: { onBadge: (n: number) => void }) {
         >
           اختبار الإشعار
         </button>
+      )}
+      {enabled && !pushReady && (
+        <button className="btn" onClick={enable}>
+          تفعيل إشعارات الخلفية
+        </button>
+      )}
+      {pushReady && (
+        <span role="status" className="up">
+          إشعارات الخلفية جاهزة
+        </span>
       )}
       <small>{hint || "التنبيهات تعمل أثناء فتح تبويب اللوحة فقط."}</small>
       <details>

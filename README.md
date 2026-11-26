@@ -68,11 +68,11 @@ The webhook acknowledges after a unique inbox row and pg-boss job commit togethe
 
 Meta delivery is an external side effect. A process/database crash after Meta accepts a send but before the transaction commits can leave delivery uncertain; v1 does not claim exactly-once outbound delivery. Check Meta delivery receipts and conversation audit history before manually retrying uncertain sends. Queue errors are logged without request bodies. Monitor pg-boss failures, pending inbox rows, `/health`, and agent_error notifications. Internal config access requires `x-agent-api-key`; an empty key disables it.
 
-## Notifications and phase 2 Web Push
+## Notifications and Firebase Web Push
 
 Staff must click **تفعيل الإشعارات** to unlock browser audio and request desktop notification permission. Denied permission requires allowing notifications in the browser's site settings. Sound, desktop, and volume preferences are stored per user. Urgent notifications repeat every 30 seconds until the chat is opened or assigned. Reconnecting refetches conversations and missed notifications. **Without Web Push, alerts work only while the dashboard tab is open.**
 
-Phase 2 preparation is documented in [WEB_PUSH.md](docs/WEB_PUSH.md): service worker registration, VAPID key management, subscription persistence, per-user routing, and minimal payloads. These are deliberately not implemented or represented as available in v1.
+Firebase background delivery is now implemented following the later request. With Firebase configured, a registered browser can receive generic Arabic alerts after the dashboard tab closes. The API and browser background push service must remain running, and the staff session must remain valid. See [WEB_PUSH.md](docs/WEB_PUSH.md) for registration, server credentials, logout behavior and testing.
 
 ## Backups and data retention
 

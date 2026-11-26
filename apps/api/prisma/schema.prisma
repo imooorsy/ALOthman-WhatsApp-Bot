@@ -38,6 +38,7 @@ model StaffUser {
  conversations Conversation[]
  events ConversationEvent[]
  reads NotificationRead[]
+ pushRegistrations PushRegistration[]
 }
 model Client {
  id String @id @default(cuid())
@@ -100,6 +101,7 @@ model Notification {
  reason String
  createdAt DateTime @default(now())
  reads NotificationRead[]
+ pushDeliveries PushDelivery[]
  @@index([createdAt])
 }
 model NotificationRead {
@@ -135,4 +137,30 @@ model WebhookInbox {
  processedAt DateTime?
  createdAt DateTime @default(now())
  @@index([processedAt,createdAt])
+}
+model PushRegistration {
+ id String @id @default(cuid())
+ fid String @unique
+ staffId String
+ staff StaffUser @relation(fields:[staffId],references:[id],onDelete:Cascade)
+ lastSeenAt DateTime @default(now())
+ createdAt DateTime @default(now())
+ deliveries PushDelivery[]
+ @@index([staffId])
+}
+model PushDelivery {
+ id String @id @default(cuid())
+ registrationId String
+ registration PushRegistration @relation(fields:[registrationId],references:[id],onDelete:Cascade)
+ notificationId String?
+ notification Notification? @relation(fields:[notificationId],references:[id],onDelete:Cascade)
+ testBatchId String?
+ ordinal Int @default(0)
+ dueAt DateTime @default(now())
+ state String @default("pending")
+ errorCode String?
+ createdAt DateTime @default(now())
+ @@unique([registrationId,notificationId])
+ @@unique([registrationId,testBatchId,ordinal])
+ @@index([state,dueAt])
 }

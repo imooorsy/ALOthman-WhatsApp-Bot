@@ -78,3 +78,8 @@
 - Real conversation alerts retain their grouping tag with re-alerting enabled. Unsupported browsers, blocked permission, disabled desktop preferences and notification creation errors now produce Arabic guidance instead of silent sound-only behavior.
 - Prevented a late initial preferences response from overwriting preferences changed after enabling notifications.
 - Two regression tests passed for distinct repeated-test tags and grouped real-alert re-alerting. Workspace TypeScript checks passed; visual OS banner display still needs manual browser verification.
+
+## Firebase background delivery completed
+- Implemented authenticated browser enrollment, logout cleanup, root service worker, minimal data-only FCM payloads, preference/read/age gates and durable pg-boss deliveries with checked-in migrations.
+- Explicit closed-tab test sent exactly five notifications two seconds apart; Firebase accepted all five. OS banner count is not yet confirmed by the user. No additional push tests were sent during agent integration work.
+- Push tests cover five distinct worker notifications, deduplication, expiry, session ownership, sanitized failures and queue timing. TypeScript checks, API build and automated tests pass; prior Next production build passed.

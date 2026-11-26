@@ -29,8 +29,7 @@ export function getFirebaseApp(): FirebaseApp | null {
 }
 
 // Lazy loading keeps browser-only messaging out of server rendering.
-// Permission, service-worker registration and authenticated push enrollment
-// will be connected once the VAPID key and server credentials are configured.
+// Registration is handled by push-client.ts after permission is granted.
 export async function getFirebaseMessaging(): Promise<Messaging | null> {
   const app = getFirebaseApp();
   if (!app) return null;
