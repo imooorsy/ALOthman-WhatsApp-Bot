@@ -1,12 +1,13 @@
-# Fields and paid plan IDs checked against https://render.com/docs/blueprint-spec
-# API stays at one instance because Socket.IO uses a single-node adapter.
+# Production QR stack. Reference: https://render.com/docs/blueprint-spec
+# Paid, always-on services; API and paired connector each remain single-instance.
 services:
   - type: web
     name: osman-web
     runtime: node
     region: frankfurt
-    plan: 0.5c-512mb
+    plan: 1c-2g
     numInstances: 1
+    domains: [osman.alothmanlaw.sa]
     buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm --filter @osman/shared build && pnpm --filter @osman/web build
     startCommand: pnpm --filter @osman/web start
     healthCheckPath: /login
@@ -16,7 +17,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        sync: false
+        value: https://osman-api.alothmanlaw.sa
       - key: NEXT_PUBLIC_FIREBASE_API_KEY
         sync: false
       - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
@@ -35,11 +36,13 @@ services:
     name: osman-api
     runtime: node
     region: frankfurt
-    plan: 0.5c-512mb
+    plan: 1c-2g
     numInstances: 1
+    domains: [osman-api.alothmanlaw.sa]
     maxShutdownDelaySeconds: 120
     buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm --filter @osman/shared build && pnpm db:generate && pnpm --filter @osman/api build
     preDeployCommand: pnpm db:migrate
+    initialDeployHook: pnpm seed
     startCommand: pnpm --filter @osman/api start
     healthCheckPath: /health
     envVars:
@@ -53,54 +56,137 @@ services:
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
-      # Upload this file through Render Secret Files; never commit its contents.
-      - key: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/secrets/firebase-service-account.json
       - key: COOKIE_DOMAIN
-        sync: false
+        value: .alothmanlaw.sa
       - key: WEB_ORIGINS
-        sync: false
+        value: https://osman.alothmanlaw.sa
       - key: WA_PROVIDER
-        value: mock
+        value: evolution
+      - key: EVOLUTION_URL
+        fromService:
+          name: osman-whatsapp
+          type: pserv
+          property: hostport
+      - key: EVOLUTION_API_KEY
+        fromService:
+          name: osman-whatsapp
+          type: pserv
+          envVarKey: AUTHENTICATION_API_KEY
+      - key: EVOLUTION_INSTANCE
+        value: osman-production
+      - key: EVOLUTION_WEBHOOK_SECRET
+        generateValue: true
+      - key: EVOLUTION_CALLBACK_URL
+        value: https://osman-api.alothmanlaw.sa/webhooks/evolution
       - key: AGENT_MODE
-        value: mock
+        value: inprocess
+      - key: AGENT_MODULE
+        value: ../../agent/dashboard-adapter.cjs
+      - key: AGENT_CONCURRENCY
+        value: "10"
+      - key: AGENT_INTAKE_MODE
+        value: flexible
+      - key: MODEL_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_MODEL
+        value: openai/gpt-6-luna
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: AGENT_TIMEOUT_MS
+        value: "20000"
+      - key: AGENT_RETRIES
+        value: "1"
       - key: AGENT_API_KEY
         generateValue: true
-      - key: WA_PHONE_NUMBER_ID
+      - key: SEED_ADMIN_EMAIL
         sync: false
-      - key: WA_ACCESS_TOKEN
+      - key: SEED_ADMIN_PASSWORD
         sync: false
-      - key: WA_VERIFY_TOKEN
-        sync: false
-      - key: WA_APP_SECRET
-        sync: false
-      - key: WA_API_VERSION
-        value: v22.0
-      # Optional HTTP agent: uncomment this variable AND the osman-agent service.
-      # Set AGENT_MODE=http. hostport omits a scheme; the adapter adds http://.
-      # - key: AGENT_URL
-      #   fromService:
-      #     name: osman-agent
-      #     type: pserv
-      #     property: hostport
-  # - type: pserv
-  #   name: osman-agent
-  #   runtime: docker
-  #   region: frankfurt
-  #   plan: 0.5c-512mb
-  #   numInstances: 1
-  #   dockerfilePath: ./agent/Dockerfile
-  #   dockerContext: ./agent
-  #   envVars:
-  #     - key: AGENT_API_KEY
-  #       fromService:
-  #         name: osman-api
-  #         type: web
-  #         envVarKey: AGENT_API_KEY
+      - key: SEED_ADMIN_NAME
+        value: مدير المكتب
+      - key: SEED_BOT_PAUSED
+        value: "true"
+      # Upload firebase-service-account.json using API service -> Secret Files.
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/secrets/firebase-service-account.json
+  - type: pserv
+    name: osman-whatsapp
+    runtime: image
+    image:
+      url: docker.io/evoapicloud/evolution-api:v2.3.8
+    region: frankfurt
+    plan: 1c-2g
+    numInstances: 1
+    disk:
+      name: whatsapp-pairing
+      mountPath: /evolution/instances
+      sizeGB: 5
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SERVER_PORT
+        value: "8080"
+      - key: SERVER_TYPE
+        value: http
+      - key: AUTHENTICATION_API_KEY
+        generateValue: true
+      - key: AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES
+        value: "false"
+      - key: DATABASE_ENABLED
+        value: "true"
+      - key: DATABASE_PROVIDER
+        value: postgresql
+      - key: DATABASE_CONNECTION_URI
+        fromDatabase:
+          name: osman-whatsapp-db
+          property: connectionString
+      - key: DATABASE_CONNECTION_CLIENT_NAME
+        value: osman
+      # Single connector, persisted pairing; no shared Redis is needed for this tested setup.
+      - key: CACHE_REDIS_ENABLED
+        value: "false"
+      - key: CACHE_LOCAL_ENABLED
+        value: "true"
+      - key: DATABASE_SAVE_DATA_INSTANCE
+        value: "true"
+      - key: DATABASE_SAVE_DATA_NEW_MESSAGE
+        value: "true"
+      - key: DATABASE_SAVE_MESSAGE_UPDATE
+        value: "true"
+      - key: DATABASE_SAVE_DATA_CONTACTS
+        value: "false"
+      - key: DATABASE_SAVE_DATA_CHATS
+        value: "false"
+      - key: DATABASE_SAVE_DATA_LABELS
+        value: "false"
+      - key: DATABASE_SAVE_DATA_HISTORIC
+        value: "false"
+      - key: TELEMETRY_ENABLED
+        value: "false"
+      - key: LOG_LEVEL
+        value: ERROR,WARN
+      - key: LOG_BAILEYS
+        value: error
+      - key: LOG_COLOR
+        value: "false"
+      - key: WEBHOOK_GLOBAL_ENABLED
+        value: "false"
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: CONFIG_SESSION_PHONE_CLIENT
+        value: Osman
+      - key: CONFIG_SESSION_PHONE_NAME
+        value: Chrome
 databases:
   - name: osman-db
     region: frankfurt
-    plan: 0.1c-256mb
+    plan: 0.5c-1g
     databaseName: osman
     user: osman
+    ipAllowList: []
+  - name: osman-whatsapp-db
+    region: frankfurt
+    plan: 0.5c-1g
+    databaseName: evolution
+    user: evolution
     ipAllowList: []

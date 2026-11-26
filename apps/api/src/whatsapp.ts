@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
+import { evolutionUrl } from "./evolution-client";
 export interface IWhatsAppProvider {
   send(phone: string, text: string): Promise<{ id: string }>;
 }
@@ -16,7 +17,7 @@ export class WhatsAppProvider implements IWhatsAppProvider {
       )
         throw new Error("Evolution is not configured");
       const response = await fetch(
-        `${process.env.EVOLUTION_URL.replace(/\/$/, "")}/message/sendText/${encodeURIComponent(process.env.EVOLUTION_INSTANCE)}`,
+        `${evolutionUrl()}/message/sendText/${encodeURIComponent(process.env.EVOLUTION_INSTANCE)}`,
         {
           method: "POST",
           redirect: "error",

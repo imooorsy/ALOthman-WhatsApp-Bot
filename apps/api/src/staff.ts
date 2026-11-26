@@ -40,16 +40,27 @@ export class StaffController {
   @Get() list() {
     return this.db.staffUser.findMany({ select: userSelect });
   }
-  @Post() async create(@Body() body: StaffDto) {
+  @Post() async create(@Body() body: StaffDto, @Req() req: AuthRequest) {
     try {
-      return await this.db.staffUser.create({
-        data: {
-          name: body.name,
-          email: body.email.toLowerCase(),
-          passwordHash: await hash(body.password, 12),
-          role: body.role,
-        },
-        select: userSelect,
+      const passwordHash = await hash(body.password, 12);
+      return await this.db.$transaction(async (tx) => {
+        const user = await tx.staffUser.create({
+          data: {
+            name: body.name,
+            email: body.email.toLowerCase(),
+            passwordHash,
+            role: body.role,
+          },
+          select: userSelect,
+        });
+        await tx.systemAuditEvent.create({
+          data: {
+            actorStaffId: req.user.id,
+            type: "staff.created",
+            payload: { targetStaffId: user.id, role: user.role },
+          },
+        });
+        return user;
       });
     } catch {
       throw new BadRequestException(
@@ -65,13 +76,27 @@ export class StaffController {
     if (id === req.user.id && body.role === "employee")
       throw new BadRequestException("لا يمكنك إزالة صلاحية المدير من حسابك");
     const { password, ...data } = body;
-    return this.db.staffUser.update({
-      where: { id },
-      data: {
-        ...data,
-        ...(password ? { passwordHash: await hash(password, 12) } : {}),
-      },
-      select: userSelect,
+    const passwordHash = password ? await hash(password, 12) : undefined;
+    return this.db.$transaction(async (tx) => {
+      const user = await tx.staffUser.update({
+        where: { id },
+        data: {
+          ...data,
+          ...(passwordHash ? { passwordHash } : {}),
+        },
+        select: userSelect,
+      });
+      await tx.systemAuditEvent.create({
+        data: {
+          actorStaffId: req.user.id,
+          type: "staff.updated",
+          payload: {
+            targetStaffId: id,
+            fields: [...Object.keys(data), ...(password ? ["password"] : [])],
+          },
+        },
+      });
+      return user;
     });
   }
   @Delete(":id") async remove(
@@ -81,7 +106,16 @@ export class StaffController {
     if (id === req.user.id) throw new BadRequestException("لا يمكنك حذف حسابك");
     // Preserve historical authors and assignments; only unreferenced users can be removed.
     try {
-      await this.db.staffUser.delete({ where: { id } });
+      await this.db.$transaction(async (tx) => {
+        await tx.staffUser.delete({ where: { id } });
+        await tx.systemAuditEvent.create({
+          data: {
+            actorStaffId: req.user.id,
+            type: "staff.deleted",
+            payload: { targetStaffId: id },
+          },
+        });
+      });
       return { ok: true };
     } catch {
       throw new BadRequestException(

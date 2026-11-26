@@ -17,6 +17,10 @@ import { InboundService, DevController } from "./inbound";
 import { AgentService } from "./agent";
 import { WhatsAppProvider } from "./whatsapp";
 import { EvolutionWebhookController } from "./evolution";
+import {
+  WhatsAppSessionService,
+  WhatsAppSessionController,
+} from "./whatsapp-session";
 import { Controller, Get } from "@nestjs/common";
 @Controller("health")
 class HealthController {
@@ -61,6 +65,7 @@ class HealthController {
     DevController,
     WebhookController,
     EvolutionWebhookController,
+    WhatsAppSessionController,
     InternalController,
     NotificationsController,
     PushController,
@@ -73,6 +78,7 @@ class HealthController {
     InboundService,
     AgentService,
     WhatsAppProvider,
+    WhatsAppSessionService,
     QueueService,
     ConversationWorker,
     RealtimeGateway,

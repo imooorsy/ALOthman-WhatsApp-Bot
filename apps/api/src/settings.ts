@@ -41,7 +41,7 @@ export class SettingsService {
       version: row.configVersion,
     };
   }
-  async save(body: unknown) {
+  async save(body: unknown, actorStaffId?: string) {
     const parsed = settingsSchema
       .extend({ version: requireVersion })
       .safeParse(body);
@@ -70,6 +70,14 @@ export class SettingsService {
       await tx.caseCategory.createMany({
         data: categories.map((category, sort) => ({ ...category, sort })),
       });
+      if (actorStaffId)
+        await tx.systemAuditEvent.create({
+          data: {
+            actorStaffId,
+            type: "settings.saved",
+            payload: { configVersion: version + 1 },
+          },
+        });
     });
     return this.get();
   }
@@ -87,8 +95,8 @@ export class SettingsController {
   @Get() get() {
     return this.settings.get();
   }
-  @Put() @Admin() async save(@Body() body: unknown) {
-    const result = await this.settings.save(body);
+  @Put() @Admin() async save(@Body() body: unknown, @Req() req: AuthRequest) {
+    const result = await this.settings.save(body, req.user.id);
     this.realtime.settings(result.rules.paused);
     return result;
   }
@@ -99,10 +107,20 @@ export class SettingsController {
     const parsed = notifyPrefsSchema.safeParse(body);
     if (!parsed.success)
       throw new BadRequestException("إعدادات إشعارات غير صالحة");
-    return this.db.staffUser.update({
-      where: { id: req.user.id },
-      data: { notifyPrefs: parsed.data },
-      select: { notifyPrefs: true },
+    return this.db.$transaction(async (tx) => {
+      const user = await tx.staffUser.update({
+        where: { id: req.user.id },
+        data: { notifyPrefs: parsed.data },
+        select: { notifyPrefs: true },
+      });
+      await tx.systemAuditEvent.create({
+        data: {
+          actorStaffId: req.user.id,
+          type: "settings.preferences.updated",
+          payload: {},
+        },
+      });
+      return user;
     });
   }
 }

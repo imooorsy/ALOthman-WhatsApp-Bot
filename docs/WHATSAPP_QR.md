@@ -1,6 +1,6 @@
 # WhatsApp through a QR login
 
-The supplied engineer code uses Evolution API's **WHATSAPP-BAILEYS** connector. This is a WhatsApp linked-device session, distinct from the existing official Meta Cloud API provider. The dashboard now supports `WA_PROVIDER=mock|meta|evolution`; select one provider for a number and keep the engineer's standalone server stopped.
+The supplied engineer code uses Evolution API's **WHATSAPP-BAILEYS** connector. This is a WhatsApp linked-device session, distinct from the existing official Meta Cloud API provider. The dashboard now supports `WA_PROVIDER=mock|meta|evolution`; select one provider for a number and keep the engineer's standalone server stopped. Production deployment and admin QR onboarding are described in [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md). An admin can now pair from Settings → ربط واتساب المكتب; the commands below remain available for local setup.
 
 ## Local setup (Windows + Docker Desktop)
 
@@ -41,7 +41,7 @@ If Evolution stays connecting and returns only `count: 0`, check HTTPS access fr
 
 The local Docker callback is `http://host.docker.internal:4000/webhooks/evolution`. The connector sends the private `x-webhook-secret` header. This route bypasses browser Origin checks only because it verifies that header, selected provider and instance. Each message/receipt is persisted with its unique WhatsApp ID and a pg-boss job in one transaction, then follows the same debounce, advisory lock, state machine, staff notifications and outbound provider as Meta. Client text is not logged.
 
-In another hosting arrangement set EVOLUTION_CALLBACK_URL in the shell before running the link script, for example `https://api.example.com/webhooks/evolution`. EVOLUTION_URL must be the connector base URL reachable by the API. Use HTTPS/private networking, protect the manager/API key, and persist connector volumes. This connector is an additional always-on service; the existing Render Blueprint does not deploy it. Do not copy the local Docker-host callback into production.
+In another hosting arrangement set EVOLUTION_CALLBACK_URL before pairing, for example `https://osman-api.alothmanlaw.sa/webhooks/evolution`. EVOLUTION_URL must be the connector base URL reachable by the API. The Render Blueprint now includes this private, always-on connector and persistent pairing disk. Its private hostport is normalized by the API; the browser never receives the connector API key. Do not copy the local Docker-host callback into production.
 
 Direct chats are accepted with either a real phone identity or WhatsApp's opaque private ID (`@lid`). Client.waAddress stores the delivery address separately; Client.phone remains null when WhatsApp does not supply a phone alias. Private IDs are never treated as phone numbers. Both agent and staff replies use the actual delivery address. The dashboard identifies these clients as حساب واتساب until a name/phone becomes available; forwarding a secretary message that requires a phone number is blocked with guidance when none is known. Groups, self messages, reactions and history-sync events do not trigger agent replies. Attachments retain the staff-handoff policy and the staff composer retains its 24-hour limit. Verify receiving after reconnect/restart before rollout.
 

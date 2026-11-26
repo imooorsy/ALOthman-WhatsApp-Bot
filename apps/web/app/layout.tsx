@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./whatsapp.css";
 export const metadata: Metadata = {
   title: "لوحة عثمان",
   description: "آل عثمان محامون ومستشارون",

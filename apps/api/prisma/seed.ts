@@ -23,7 +23,17 @@ async function main() {
     });
     const existing = await tx.officeSettings.findUnique({ where: { id: 1 } });
     if (!existing) {
-      const { services, categories, ...data } = defaultSettings;
+      const { services, categories, ...defaults } = defaultSettings;
+      const data = {
+        ...defaults,
+        rules: {
+          ...defaults.rules,
+          paused:
+            process.env.SEED_BOT_PAUSED === "true"
+              ? true
+              : defaults.rules.paused,
+        },
+      };
       await tx.officeSettings.create({ data: { id: 1, data } });
       await tx.service.createMany({ data: services });
       await tx.caseCategory.createMany({ data: categories });

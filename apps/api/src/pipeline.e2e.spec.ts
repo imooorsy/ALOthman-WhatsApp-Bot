@@ -108,6 +108,99 @@ describeDatabase("webhook → PostgreSQL queue → agent → state → socket", 
       await db.$disconnect();
     }
   });
+  it("audits staff mutations without storing passwords, hashes or email addresses", async () => {
+    const targetEmail = "audit-" + email;
+    const headers = {
+      Origin: "http://localhost:3000",
+      Cookie: cookie,
+      "Content-Type": "application/json",
+    };
+    const actor = await db.staffUser.findUniqueOrThrow({ where: { email } });
+    let targetId: string | undefined;
+    try {
+      const created = await fetch(base + "/staff", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          email: targetEmail,
+          name: "اختبار التدقيق",
+          role: "employee",
+          password,
+        }),
+      });
+      expect(created.status).toBe(201);
+      targetId = (await created.json()).id;
+      expect(
+        (
+          await fetch(base + "/staff/" + targetId, {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ password, role: "admin" }),
+          })
+        ).status,
+      ).toBe(200);
+      expect(
+        (
+          await fetch(base + "/staff/" + targetId, {
+            method: "DELETE",
+            headers,
+          })
+        ).status,
+      ).toBe(200);
+      const events = await db.systemAuditEvent.findMany({
+        where: { actorStaffId: actor.id },
+        orderBy: { createdAt: "asc" },
+      });
+      expect(events.map((event) => event.type)).toEqual([
+        "staff.created",
+        "staff.updated",
+        "staff.deleted",
+      ]);
+      const payload = JSON.stringify(events.map((event) => event.payload));
+      expect(payload).not.toContain(password);
+      expect(payload).not.toContain(targetEmail);
+      expect(payload).not.toContain("passwordHash");
+    } finally {
+      if (targetId) await db.staffUser.deleteMany({ where: { id: targetId } });
+      await db.systemAuditEvent.deleteMany({
+        where: { actorStaffId: actor.id },
+      });
+    }
+  });
+  it("protects WhatsApp pairing from anonymous users and employees", async () => {
+    expect((await fetch(base + "/whatsapp/status")).status).toBe(401);
+    const employee = await db.staffUser.create({
+      data: {
+        email: "employee-" + email,
+        name: "اختبار الصلاحيات",
+        role: "employee",
+        passwordHash: await hash(password, 4),
+      },
+    });
+    try {
+      const login = await fetch(base + "/auth/login", {
+        method: "POST",
+        headers: {
+          Origin: "http://localhost:3000",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: employee.email, password }),
+      });
+      const headers = {
+        Origin: "http://localhost:3000",
+        Cookie: login.headers.get("set-cookie")!.split(";")[0],
+      };
+      const status = await fetch(base + "/whatsapp/status", { headers });
+      expect(status.status).toBe(200);
+      expect((await status.json()).qr).toBeNull();
+      expect(
+        (await fetch(base + "/whatsapp/connect", { method: "POST", headers }))
+          .status,
+      ).toBe(403);
+    } finally {
+      await db.staffUser.delete({ where: { id: employee.id } });
+    }
+  });
   it("deduplicates webhook retries and emits a handoff after durable processing", async () => {
     const messages: unknown[] = [];
     socket.on("handoff.created", (payload) => messages.push(payload));

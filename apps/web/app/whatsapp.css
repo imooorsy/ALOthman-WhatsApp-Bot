@@ -1,0 +1,16 @@
+.whatsapp-qr {
+  max-width: 320px;
+  margin-inline: auto;
+  text-align: center;
+}
+.whatsapp-qr img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+  background: white;
+}
+.whatsapp-heading {
+  margin: 0;
+  font-size: inherit;
+}

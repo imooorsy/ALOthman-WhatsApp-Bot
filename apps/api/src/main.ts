@@ -7,7 +7,9 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 import { SafeExceptionFilter } from "./errors";
+import { validateRuntimeConfig } from "./runtime-config";
 async function main() {
+  validateRuntimeConfig(process.env);
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32)
     throw new Error("JWT_SECRET must contain at least 32 characters");
   const origins = (process.env.WEB_ORIGINS || "http://localhost:3000")

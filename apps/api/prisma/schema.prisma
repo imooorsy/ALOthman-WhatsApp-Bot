@@ -39,6 +39,7 @@ model StaffUser {
  events ConversationEvent[]
  reads NotificationRead[]
  pushRegistrations PushRegistration[]
+ systemAuditEvents SystemAuditEvent[]
 }
 model Client {
  id String @id @default(cuid())
@@ -48,6 +49,15 @@ model Client {
  detectedCategory String?
  shortDescription String?
  conversations Conversation[]
+}
+model SystemAuditEvent {
+ id String @id @default(cuid())
+ actorStaffId String?
+ actorStaff StaffUser? @relation(fields:[actorStaffId],references:[id],onDelete:SetNull)
+ type String
+ payload Json
+ createdAt DateTime @default(now())
+ @@index([createdAt])
 }
 model Conversation {
  id String @id @default(cuid())

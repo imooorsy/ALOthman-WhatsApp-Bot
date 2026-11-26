@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { OfficeConfig, Staff } from "@osman/shared";
 import { Shell, Switch, Toast } from "../../components/shell";
 import { api } from "../../components/api";
+import { WhatsAppConnection } from "../../components/whatsapp-connection";
 export default function Settings() {
   const [config, setConfig] = useState<OfficeConfig>();
   const savedPause = useRef(true);
@@ -85,6 +86,7 @@ export default function Settings() {
           )}
           {config ? (
             <div className="sg">
+              <WhatsAppConnection admin={!readonly} say={say} />
               <fieldset className="pn" disabled={readonly || busy}>
                 <legend className="ph">معلومات المكتب</legend>
                 <div className="f">

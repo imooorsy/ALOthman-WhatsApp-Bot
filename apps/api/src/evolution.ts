@@ -11,6 +11,7 @@ import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { Db } from "./db";
 import { QueueService } from "./queue";
+import { Throttle } from "@nestjs/throttler";
 
 const record = z.record(z.string(), z.unknown());
 const payloadSchema = z.object({
@@ -161,10 +162,10 @@ export class EvolutionWebhookController {
     private db: Db,
     private queue: QueueService,
   ) {}
-  @Post() @HttpCode(200) async receive(
-    @Req() req: Request,
-    @Body() body: unknown,
-  ) {
+  @Post()
+  @HttpCode(200)
+  @Throttle({ default: { limit: 1000, ttl: 60000 } })
+  async receive(@Req() req: Request, @Body() body: unknown) {
     const expected = process.env.EVOLUTION_WEBHOOK_SECRET || "";
     const supplied = req.get("x-webhook-secret") || "";
     if (
