@@ -115,7 +115,8 @@ services:
     image:
       url: docker.io/evoapicloud/evolution-api:v2.3.8
     region: frankfurt
-    plan: 1c-2g
+    # User-selected budget pilot; monitor memory/restarts after pairing.
+    plan: 0.5c-512mb
     numInstances: 1
     disk:
       name: whatsapp-pairing

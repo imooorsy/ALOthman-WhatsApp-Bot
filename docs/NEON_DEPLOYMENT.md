@@ -8,7 +8,7 @@ At the checked published rates, Render services/storage cost approximately $39.2
 
 At a fixed 0.25 CU running 730 hours, consumption is 182.5 CU-hours. Neon Launch compute at $0.106/CU-hour is approximately $19.35/month, plus storage ($0.35/GB-month), backup/history, transfer or other applicable charges. Thus budget roughly **$59–60/month total** at that compute size and small storage, with higher cost if compute scales up. Free-plan quota is not enough for continuous full-month operation with this queue. Do not assume that a paid plan receives the free plan's compute allowance.
 
-The smaller all-Render profile is approximately $51.85/month and is currently the cheaper estimated always-on managed option. Neon is useful for an existing paid account or limited-duration testing, but is not automatically a cost reduction here. Both estimates exclude model usage, taxes and account/usage extras. Verify the actual creation previews and monitor billing.
+The current user-selected all-Render budget pilot is approximately $33.85/month, including a 512 MB connector whose memory suitability remains unverified. This optional Neon manifest retains the 2 GB connector, so its $59–60 estimate is not an equal-size comparison. Even reducing its connector to 512 MB would yield about $41–42 with continuously active Neon compute. Neon is useful for an existing paid account or limited-duration testing, but is not automatically a cost reduction here. Both estimates exclude model usage, taxes and account/usage extras. Verify the actual creation previews and monitor billing.
 
 ## Create and connect
 

@@ -1,5 +1,9 @@
 # Implementation status
 
+## User-selected $33.85 Render pilot
+- Reduced only the default render.yaml WhatsApp connector from 1c-2g to 0.5c-512mb at the user's explicit choice. Estimated total drops from $51.85 to $33.85/month, excluding model usage/taxes/extras. The optional Neon manifest retains its earlier 2 GB connector and its guide now distinguishes that comparison.
+- Updated deployment instructions with memory/restart checks during pairing and normal use, and an upgrade-only rollback preserving database/pairing storage. No live Render resources were changed. Connector memory suitability and actual production load remain unverified.
+
 ## Assumptions
 - SPEC.md at the repository root is the authoritative full specification (docs/SPEC.md does not exist).
 - Keep the already copied design and the original source documents unchanged.
@@ -140,3 +144,4 @@
 - Changed the default new-deployment Blueprint to 512 MB web/API services, two 256 MB-RAM databases with explicit 1 GB storage each, and a 1 GB pairing disk. Retained the 2 GB WhatsApp connector and ten workers; no live Render resources were modified.
 - Expected base infrastructure is about $51.85/month at published rates, before model usage, taxes, workspace/usage charges; Render's refreshed preview must confirm. This is a lower-headroom initial deployment profile, not a measured ten-chat production capacity guarantee. Existing disks cannot be shrunk. Local Docker memory inspection was unavailable, so the connector was not downsized speculatively.
 - Validation: both manifests passed the official Render JSON Schema; workspace typecheck and git diff --check passed. No application behavior changed; live Neon connectivity and reduced-plan load testing remain outstanding.
+- Validation for this change: both Blueprint manifests passed official Render schema validation; workspace typecheck and git diff --check passed. No application code or schema changed.
